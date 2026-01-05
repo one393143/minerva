@@ -558,63 +558,70 @@ const App = () => {
     // Notification
     React.createElement(Notification, { message: notification }),
 
-    // Main Content
-    React.createElement('main', { className: 'p-4 sm:p-6' },
-      activeTab === 'field' && React.createElement(FieldPage, {
-        lineup,
-        players,
-        bench,
-        onPositionClick: setSelectingPosition,
-        onAutoOptimize: handleAutoOptimize,
-        onUploadLineup: handleUploadLineup,
-        onLoadLineupHistory: handleLoadLineupHistory
+  // Main Content
+  React.createElement('main', { className: 'p-4 sm:p-6' },
+    activeTab === 'field' && React.createElement(FieldPage, {
+      lineup,
+      players,
+      bench,
+      onPositionClick: setSelectingPosition,
+      onAutoOptimize: handleAutoOptimize,
+      onUploadLineup: handleUploadLineup,
+      onLoadLineupHistory: handleLoadLineupHistory
+    }),
+  
+    activeTab === 'batting' && React.createElement(BattingPage, {
+      battingOrder,
+      players,
+      pitcherBats,
+      battingSubstitutes,
+      onPitcherBatsChange: setPitcherBats,
+      onMoveUp: handleMoveUp,
+      onMoveDown: handleMoveDown,
+      onCopyLineup: handleCopyLineup,
+      onAutoOptimizeBatting: handleAutoOptimizeBatting
+    }),
+  
+    activeTab === 'rotation' && React.createElement(RotationPage, {
+      rotations,
+      players,
+      pitcherBats,
+      onAddRotation: handleAddRotation,
+      onDuplicateRotation: handleDuplicateRotation,
+      onDeleteRotation: handleDeleteRotation,
+      onUpdateRotationName: handleUpdateRotationName,
+      onEditSlot: setEditingSlot
+    }),
+  
+    activeTab === 'roster' && React.createElement(RosterPage, {
+      players,
+      onAddPlayer: () => setEditingPlayer({
+        primaryPosition: 'P',
+        secondaryPositions: [],
+        grades: STAT_NAMES.reduce((obj, stat) => {
+          obj[stat] = 'C';
+          return obj;
+        }, {}),
+        willAttend: true,
+        points: 0
       }),
+      onEditPlayer: setEditingPlayer,
+      onDeletePlayer: handleDeletePlayer,
+      onUploadPlayers: handleUploadPlayers,
+      onExportExcel: handleExportExcel,
+      onImportExcel: handleImportExcel,
+      onToggleAllAttendance: handleToggleAllAttendance,
+      onDeleteAll: handleDeleteAll,
+      onUpdatePoints: handleUpdatePoints
+    }),
+  
+    // 🆕 新增這段
+    activeTab === 'card' && React.createElement(CardPage, {
+      players
+    })
+  ),
 
-      activeTab === 'batting' && React.createElement(BattingPage, {
-        battingOrder,
-        players,
-        pitcherBats,
-        battingSubstitutes,
-        onPitcherBatsChange: setPitcherBats,
-        onMoveUp: handleMoveUp,
-        onMoveDown: handleMoveDown,
-        onCopyLineup: handleCopyLineup,
-        onAutoOptimizeBatting: handleAutoOptimizeBatting
-      }),
-
-      activeTab === 'rotation' && React.createElement(RotationPage, {
-        rotations,
-        players,
-        pitcherBats,
-        onAddRotation: handleAddRotation,
-        onDuplicateRotation: handleDuplicateRotation,
-        onDeleteRotation: handleDeleteRotation,
-        onUpdateRotationName: handleUpdateRotationName,
-        onEditSlot: setEditingSlot
-      }),
-
-      activeTab === 'roster' && React.createElement(RosterPage, {
-        players,
-        onAddPlayer: () => setEditingPlayer({
-          primaryPosition: 'P',
-          secondaryPositions: [],
-          grades: STAT_NAMES.reduce((obj, stat) => {
-            obj[stat] = 'C';
-            return obj;
-          }, {}),
-          willAttend: true,
-          points: 0
-        }),
-        onEditPlayer: setEditingPlayer,
-        onDeletePlayer: handleDeletePlayer,
-        onUploadPlayers: handleUploadPlayers,
-        onExportExcel: handleExportExcel,
-        onImportExcel: handleImportExcel,
-        onToggleAllAttendance: handleToggleAllAttendance,
-        onDeleteAll: handleDeleteAll,
-        onUpdatePoints: handleUpdatePoints  // 🆕 加入這行
-      })
-    ),
+                             
 
     // Bottom Navigation
     React.createElement(Navigation, {
