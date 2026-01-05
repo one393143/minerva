@@ -1,12 +1,14 @@
 /**
  * 底部導航元件
+ * 檔案位置: js/components/Navigation.js
  */
 
 const NAV_ITEMS = [
   { id: 'field', icon: '🏟️', label: 'Field' },
   { id: 'batting', icon: '⚡', label: 'Lineup' },
   { id: 'rotation', icon: '🔄', label: 'Rotation' },
-  { id: 'roster', icon: '📇', label: 'Roster' }
+  { id: 'roster', icon: '📇', label: 'Roster' },
+  { id: 'card', icon: '🎴', label: 'Card' }  // 🆕 新增 CARD 按鈕
 ];
 
 export const Navigation = ({ activeTab, onTabChange }) => {
