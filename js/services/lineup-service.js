@@ -1,5 +1,5 @@
 /**
- * 陣容自動最佳化服務 - 完整修正版
+ * 陣容自動最佳化服務 - 守備最佳化完整修正版
  * 檔案位置: js/services/lineup-service.js
  */
 
@@ -32,38 +32,41 @@ function getOffenseScore(player) {
 
 /**
  * 計算球員在特定位置的適性分數（守備模式專用）
+ * 🔑 關鍵修正：守備 C 以上，主要/次要位置的適性差距縮小
  */
 function getPositionFitScoreForDefense(player, position) {
   const defenseGrade = GRADE_VALUES[player.grades.defense];
   
   // 投手位置特殊處理
   if (position === 'P') {
-    if (player.primaryPosition === 'P') return 300;
-    if (player.secondaryPositions?.includes('P')) return 150;
+    if (player.primaryPosition === 'P') return 100;
+    if (player.secondaryPositions?.includes('P')) return 50;
     return 0; // 非投手完全不能守投手
   }
   
   // FE (游擊手替補) 特殊處理
   if (position === 'FE') {
-    if (['SS', '2B', '3B'].includes(player.primaryPosition)) return 200;
-    if (player.secondaryPositions?.some(p => ['SS', '2B', '3B'].includes(p))) return 100;
-    if (defenseGrade >= 4) return 50; // 守備 C 以上可以守 FE
+    if (['SS', '2B', '3B'].includes(player.primaryPosition)) return 80;
+    if (player.secondaryPositions?.some(p => ['SS', '2B', '3B'].includes(p))) return 60;
+    if (defenseGrade >= 4) return 40; // 守備 C 以上可以守 FE
     return 10;
   }
   
-  // DH 特殊處理
+  // 🚫 守備模式不應該有 DH
   if (position.startsWith('DH')) {
-    return 50; // DH 不需要守備，給予基本分
+    return 0; // 守備模式中 DH 不參與評分
   }
   
-  // 一般位置：守備能力 C 以上可以守任何位置
+  // 🔑 關鍵修正：守備 C 以上，位置適性差距縮小
   if (defenseGrade >= 4) {
-    if (player.primaryPosition === position) return 300;
-    if (player.secondaryPositions?.includes(position)) return 200;
-    return 100; // 守備好的球員可以守任何位置
+    // 守備好的球員，主要/次要位置差距很小
+    if (player.primaryPosition === position) return 100;
+    if (player.secondaryPositions?.includes(position)) return 95; // 🔑 從 200 改成 95
+    return 80; // 守備好的球員可以守任何位置
   } else {
-    if (player.primaryPosition === position) return 300;
-    if (player.secondaryPositions?.includes(position)) return 200;
+    // 守備差的球員，只能守主要/次要位置
+    if (player.primaryPosition === position) return 100;
+    if (player.secondaryPositions?.includes(position)) return 80;
     return 0; // 守備差的球員不能亂守
   }
 }
@@ -76,33 +79,33 @@ function getPositionFitScoreForOffense(player, position) {
   
   // 投手位置特殊處理
   if (position === 'P') {
-    if (player.primaryPosition === 'P') return 300;
-    if (player.secondaryPositions?.includes('P')) return 150;
-    return 0; // 非投手完全不能守投手
+    if (player.primaryPosition === 'P') return 100;
+    if (player.secondaryPositions?.includes('P')) return 50;
+    return 0;
   }
   
   // FE (游擊手替補) 特殊處理
   if (position === 'FE') {
-    if (['SS', '2B', '3B'].includes(player.primaryPosition)) return 200;
-    if (player.secondaryPositions?.some(p => ['SS', '2B', '3B'].includes(p))) return 100;
-    if (defenseGrade >= 4) return 50; // 守備 C 以上可以守 FE
+    if (['SS', '2B', '3B'].includes(player.primaryPosition)) return 80;
+    if (player.secondaryPositions?.some(p => ['SS', '2B', '3B'].includes(p))) return 60;
+    if (defenseGrade >= 4) return 40;
     return 10;
   }
   
   // DH 特殊處理
   if (position.startsWith('DH')) {
-    return 300; // DH 最適合打擊好的球員
+    return 100; // DH 最適合打擊好的球員
   }
   
   // 一般位置：守備能力 C 以上可以守任何位置
   if (defenseGrade >= 4) {
-    if (player.primaryPosition === position) return 300;
-    if (player.secondaryPositions?.includes(position)) return 200;
-    return 100; // 守備好的球員可以守任何位置
+    if (player.primaryPosition === position) return 100;
+    if (player.secondaryPositions?.includes(position)) return 95;
+    return 80;
   } else {
-    if (player.primaryPosition === position) return 300;
-    if (player.secondaryPositions?.includes(position)) return 200;
-    return 0; // 守備差的球員不能亂守
+    if (player.primaryPosition === position) return 100;
+    if (player.secondaryPositions?.includes(position)) return 80;
+    return 0;
   }
 }
 
@@ -277,10 +280,14 @@ export function autoOptimizeByPoints(players, pitcherId, dhCount = 1) {
 }
 
 /**
- * 守備最佳化模式（修正版）
+ * 守備最佳化模式（完整修正版）
+ * 🔑 策略：
+ * 1. 先排守備位置（不含 DH）
+ * 2. 剩下的球員中，選打擊好的去 DH
+ * 3. 守備 C 以上，主要/次要位置適性差距極小
  */
 export function autoOptimizeDefense(players, pitcherId, dhCount = 1) {
-  console.log('🛡️ 守備最佳化開始');
+  console.log('🛡️ 守備最佳化開始（完整修正版）');
   
   const availablePlayers = players.filter(p => p.willAttend);
   const pitcher = availablePlayers.find(p => p.id === pitcherId);
@@ -290,10 +297,11 @@ export function autoOptimizeDefense(players, pitcherId, dhCount = 1) {
     return { P: pitcherId };
   }
 
-  const positions = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'FE'];
-  for (let i = 1; i <= dhCount; i++) {
-    positions.push(`DH${i}`);
-  }
+  // 🔑 步驟 1：先排守備位置（不含 DH）
+  const defensePositions = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'FE'];
+  
+  console.log('🛡️ 步驟 1：排守備位置（不含 DH）');
+  console.log('📍 守備位置:', defensePositions);
 
   const scoringFunction = (player, position) => {
     const fitScore = getPositionFitScoreForDefense(player, position);
@@ -301,30 +309,62 @@ export function autoOptimizeDefense(players, pitcherId, dhCount = 1) {
     
     const defenseScore = getDefenseScore(player);
     
-    // 守備能力權重 >> 位置適性權重
-    return defenseScore * 100 + fitScore;
+    // 🔑 守備能力權重 >>> 位置適性權重
+    // 守備能力 * 1000，位置適性只是微調
+    return defenseScore * 1000 + fitScore;
   };
 
-  const lineup = hungarianAssignment(availablePlayers, positions, scoringFunction);
+  const defenseLineup = hungarianAssignment(availablePlayers, defensePositions, scoringFunction);
   
   // 顯示守備分析
-  console.log('🛡️ 守備分析:');
-  Object.entries(lineup).forEach(([pos, playerId]) => {
+  console.log('🛡️ 守備位置分析:');
+  Object.entries(defenseLineup).forEach(([pos, playerId]) => {
     const player = availablePlayers.find(p => p.id === playerId);
     if (player) {
       const defScore = getDefenseScore(player);
       const fitScore = getPositionFitScoreForDefense(player, pos);
-      console.log(`${pos}: ${player.name} (守備:${defScore}, 適性:${fitScore}, 總分:${defScore * 100 + fitScore})`);
+      console.log(`${pos}: ${player.name} (守備:${defScore}, 適性:${fitScore}, 總分:${defScore * 1000 + fitScore})`);
     }
   });
+
+  // 🔑 步驟 2：剩下的球員中，選打擊好的去 DH
+  if (dhCount > 0) {
+    console.log(`\n🏏 步驟 2：選打擊好的球員去 DH (需要 ${dhCount} 個)`);
+    
+    const assignedPlayerIds = new Set(Object.values(defenseLineup));
+    const remainingPlayers = availablePlayers.filter(p => !assignedPlayerIds.has(p.id));
+    
+    console.log('🏏 剩餘球員:', remainingPlayers.map(p => p.name));
+    
+    // 依照打擊能力排序
+    const dhCandidates = remainingPlayers
+      .sort((a, b) => {
+        const offenseA = getOffenseScore(a);
+        const offenseB = getOffenseScore(b);
+        return offenseB - offenseA;
+      })
+      .slice(0, dhCount);
+    
+    console.log('🏏 DH 候選人（依打擊能力排序）:');
+    dhCandidates.forEach((p, idx) => {
+      const offScore = getOffenseScore(p);
+      console.log(`DH${idx + 1}: ${p.name} (打擊:${offScore})`);
+      defenseLineup[`DH${idx + 1}`] = p.id;
+    });
+  }
   
-  console.log('🛡️ 守備最佳化完成');
-  return lineup;
+  console.log('\n🛡️ 守備最佳化完成');
+  console.log('✅ 最終陣容:', defenseLineup);
+  
+  return defenseLineup;
 }
 
 /**
  * 火力最大化模式（修正版）
- * 策略：打擊好的球員優先上場，但投手必須由使用者指定
+ * 策略：
+ * 1. 先排守備位置（不含 DH）
+ * 2. 剩下的球員中，選打擊好的去 DH
+ * 3. 打擊能力 >>> 位置適性
  */
 export function autoOptimizeOffense(players, pitcherId, dhCount = 1) {
   console.log('⚔️ 火力最大化開始');
@@ -337,88 +377,64 @@ export function autoOptimizeOffense(players, pitcherId, dhCount = 1) {
     return { P: pitcherId };
   }
 
-  const positions = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'FE'];
-  for (let i = 1; i <= dhCount; i++) {
-    positions.push(`DH${i}`);
-  }
-  const N = positions.length;
+  // 步驟 1：先排守備位置（不含 DH）
+  const fieldPositions = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'FE'];
+  
+  console.log('⚔️ 步驟 1：排守備位置（不含 DH）');
+  console.log('📍 守備位置:', fieldPositions);
 
-  console.log(`📍 需要填滿 ${N} 個位置:`, positions);
-
-  // 🆕 選出打擊前 N-1 名球員（扣除投手）
-  let topHitters = availablePlayers
-    .filter(p => p.id !== pitcherId)
-    .sort((a, b) => {
-      const scoreA = getOffenseScore(a);
-      const scoreB = getOffenseScore(b);
-      return scoreB - scoreA;
-    })
-    .slice(0, N - 1);
-
-  console.log('🏆 打擊前 N-1 名球員:', topHitters.map(p => {
-    const offScore = getOffenseScore(p);
-    return `${p.name}(打擊:${offScore})`;
-  }));
-
-  let attempt = 0;
-  let lineup = null;
-
-  while (attempt < 5) {
-    const candidates = [pitcher, ...topHitters];
+  const scoringFunction = (player, position) => {
+    const fitScore = getPositionFitScoreForOffense(player, position);
+    if (fitScore === 0) return 0;
     
-    console.log(`🔄 第 ${attempt + 1} 次嘗試，候選球員:`, candidates.map(p => p.name));
+    const offenseScore = getOffenseScore(player);
+    
+    // 打擊能力權重 >>> 位置適性權重
+    return offenseScore * 1000 + fitScore;
+  };
 
-    const scoringFunction = (player, position) => {
-      const fitScore = getPositionFitScoreForOffense(player, position);
-      if (fitScore === 0) return 0;
-      
-      const offenseScore = getOffenseScore(player);
-      
-      // 🔑 打擊能力權重 >> 位置適性權重
-      return offenseScore * 100 + fitScore;
-    };
-
-    lineup = hungarianAssignment(candidates, positions, scoringFunction);
-
-    const filledCount = Object.keys(lineup).length;
-    console.log(`✅ 已填滿 ${filledCount}/${N} 個位置`);
-
-    if (filledCount >= N - 1) {
-      break;
-    }
-
-    // 遞補下一位打擊好的球員
-    const nextHitter = availablePlayers
-      .filter(p => p.id !== pitcherId && !topHitters.some(tp => tp.id === p.id))
-      .sort((a, b) => {
-        const scoreA = getOffenseScore(a);
-        const scoreB = getOffenseScore(b);
-        return scoreB - scoreA;
-      })[0];
-
-    if (!nextHitter) {
-      console.warn('⚠️ 沒有更多球員可遞補');
-      break;
-    }
-
-    console.log(`🔄 遞補球員: ${nextHitter.name}(打擊:${getOffenseScore(nextHitter)})`);
-    topHitters[topHitters.length - 1] = nextHitter;
-    attempt++;
-  }
-
+  const offenseLineup = hungarianAssignment(availablePlayers, fieldPositions, scoringFunction);
+  
   // 顯示打擊分析
-  console.log('⚔️ 打擊分析:');
-  Object.entries(lineup).forEach(([pos, playerId]) => {
+  console.log('⚔️ 守備位置分析:');
+  Object.entries(offenseLineup).forEach(([pos, playerId]) => {
     const player = availablePlayers.find(p => p.id === playerId);
     if (player) {
       const offScore = getOffenseScore(player);
       const fitScore = getPositionFitScoreForOffense(player, pos);
-      console.log(`${pos}: ${player.name} (打擊:${offScore}, 適性:${fitScore}, 總分:${offScore * 100 + fitScore})`);
+      console.log(`${pos}: ${player.name} (打擊:${offScore}, 適性:${fitScore}, 總分:${offScore * 1000 + fitScore})`);
     }
   });
+
+  // 步驟 2：剩下的球員中，選打擊好的去 DH
+  if (dhCount > 0) {
+    console.log(`\n🏏 步驟 2：選打擊好的球員去 DH (需要 ${dhCount} 個)`);
+    
+    const assignedPlayerIds = new Set(Object.values(offenseLineup));
+    const remainingPlayers = availablePlayers.filter(p => !assignedPlayerIds.has(p.id));
+    
+    console.log('🏏 剩餘球員:', remainingPlayers.map(p => p.name));
+    
+    const dhCandidates = remainingPlayers
+      .sort((a, b) => {
+        const offenseA = getOffenseScore(a);
+        const offenseB = getOffenseScore(b);
+        return offenseB - offenseA;
+      })
+      .slice(0, dhCount);
+    
+    console.log('🏏 DH 候選人（依打擊能力排序）:');
+    dhCandidates.forEach((p, idx) => {
+      const offScore = getOffenseScore(p);
+      console.log(`DH${idx + 1}: ${p.name} (打擊:${offScore})`);
+      offenseLineup[`DH${idx + 1}`] = p.id;
+    });
+  }
   
-  console.log('⚔️ 火力最大化完成');
-  return lineup || { P: pitcherId };
+  console.log('\n⚔️ 火力最大化完成');
+  console.log('✅ 最終陣容:', offenseLineup);
+  
+  return offenseLineup;
 }
 
 /**
