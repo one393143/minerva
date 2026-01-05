@@ -1,5 +1,6 @@
 /**
- * 守備配置頁面 - 完整版
+ * 守備配置頁面 - 修改版（支援火力最大化模式）
+ * 檔案位置: js/pages/FieldPage.js
  */
 
 import { ALL_POSITIONS, FIELD_POSITIONS } from '../utils/constants.js';
@@ -23,15 +24,16 @@ export const FieldPage = ({
     p.primaryPosition === 'P' || p.secondaryPositions?.includes('P')
   );
 
-  // 當 Modal 開啟時，設定預設投手
+  // 當 Modal 開啟時，設定預設投手（火力最大化模式除外）
   React.useEffect(() => {
-    if (showOptimizeModal && pitchers.length > 0 && !selectedPitcher) {
+    if (showOptimizeModal && showOptimizeModal !== '打擊最大化' && pitchers.length > 0 && !selectedPitcher) {
       setSelectedPitcher(pitchers[0].id);
     }
   }, [showOptimizeModal, pitchers.length]);
 
   const handleOptimizeClick = (mode) => {
-    if (pitchers.length === 0) {
+    // 🆕 火力最大化模式不需要檢查投手
+    if (mode !== '打擊最大化' && pitchers.length === 0) {
       alert('請先新增投手球員');
       return;
     }
@@ -39,7 +41,8 @@ export const FieldPage = ({
   };
 
   const handleOptimizeConfirm = () => {
-    if (!selectedPitcher) {
+    // 🆕 火力最大化模式不需要選投手
+    if (showOptimizeModal !== '打擊最大化' && !selectedPitcher) {
       alert('請選擇先發投手');
       return;
     }
@@ -155,8 +158,8 @@ export const FieldPage = ({
         }, `${showOptimizeModal} - 設定`),
 
         React.createElement('div', { className: 'space-y-6' },
-          // 選擇先發投手
-          React.createElement('div', { className: 'space-y-2' },
+          // 🆕 火力最大化模式時隱藏投手選擇器
+          showOptimizeModal !== '打擊最大化' && React.createElement('div', { className: 'space-y-2' },
             React.createElement('label', {
               className: 'text-xs font-black text-slate-400 uppercase'
             }, '先發投手 (Starting Pitcher)'),
@@ -195,7 +198,9 @@ export const FieldPage = ({
             className: 'bg-slate-800/50 rounded-xl p-3 text-xs text-slate-400'
           },
             React.createElement('p', { className: 'font-bold mb-1' }, '💡 提示：'),
-            React.createElement('p', null, `• 先發投手將被排在 P 位置`),
+            showOptimizeModal === '打擊最大化' 
+              ? React.createElement('p', null, '• 火力最大化模式會自動選擇打擊能力最強的球員守投手位置')
+              : React.createElement('p', null, `• 先發投手將被排在 P 位置`),
             React.createElement('p', null, `• DH 數量決定 DH1~DH${dhCount} 的配置`),
             React.createElement('p', null, `• 其他位置將依據「${showOptimizeModal}」規則自動排列`)
           )
