@@ -1,5 +1,5 @@
 /**
- * 球員卡測試頁面 - 字母評級版
+ * 球員卡測試頁面 - Modal 置中版
  * 檔案位置: js/pages/CardPage.js
  */
 
@@ -8,7 +8,7 @@ import { PlayerCardDisplay } from '../components/PlayerCardDisplay.js';
 export const CardPage = ({ players }) => {
   const [selectedPlayer, setSelectedPlayer] = React.useState(null);
   const [filterTier, setFilterTier] = React.useState('all');
-  const [sortBy, setSortBy] = React.useState('grade'); // grade, name, number
+  const [sortBy, setSortBy] = React.useState('grade');
 
   const GRADE_VALUES = { S: 7, A: 6, B: 5, C: 4, D: 3, E: 2, F: 1 };
 
@@ -28,42 +28,34 @@ export const CardPage = ({ players }) => {
   };
 
   const getLetterGrade = (average) => {
-    if (average >= 7.0) return 'S';
-    
-    if (average >= 6.7) return 'A+';
-    if (average >= 6.3) return 'A';
-    if (average >= 6.0) return 'A-';
-    
-    if (average >= 5.7) return 'B+';
-    if (average >= 5.3) return 'B';
-    if (average >= 5.0) return 'B-';
-    
-    if (average >= 4.7) return 'C+';
-    if (average >= 4.3) return 'C';
-    if (average >= 4.0) return 'C-';
-    
-    if (average >= 3.7) return 'D+';
-    if (average >= 3.3) return 'D';
-    if (average >= 3.0) return 'D-';
-    
-    if (average >= 2.7) return 'E+';
-    if (average >= 2.3) return 'E';
-    if (average >= 2.0) return 'E-';
-    
+    if (average >= 6.7) return 'S';
+    if (average >= 6.3) return 'A+';
+    if (average >= 6.0) return 'A';
+    if (average >= 5.7) return 'A-';
+    if (average >= 5.3) return 'B+';
+    if (average >= 5.0) return 'B';
+    if (average >= 4.7) return 'B-';
+    if (average >= 4.3) return 'C+';
+    if (average >= 4.0) return 'C';
+    if (average >= 3.7) return 'C-';
+    if (average >= 3.3) return 'D+';
+    if (average >= 3.0) return 'D';
+    if (average >= 2.7) return 'D-';
+    if (average >= 2.3) return 'E+';
+    if (average >= 2.0) return 'E';
+    if (average >= 1.7) return 'E-';
     return 'F';
   };
 
   const getCardTier = (letterGrade) => {
     const grade = letterGrade.replace(/[+-]/g, '');
-    
-    if (grade === 'S' || letterGrade === 'A+') return 'diamond';
+    if (grade === 'S') return 'diamond';
     if (grade === 'A') return 'gold';
     if (grade === 'B') return 'silver';
     if (grade === 'C') return 'bronze';
     return 'normal';
   };
 
-  // 篩選球員
   const filteredPlayers = React.useMemo(() => {
     if (filterTier === 'all') return players;
     
@@ -75,7 +67,6 @@ export const CardPage = ({ players }) => {
     });
   }, [players, filterTier]);
 
-  // 排序球員
   const sortedPlayers = React.useMemo(() => {
     const sorted = [...filteredPlayers];
     
@@ -94,7 +85,6 @@ export const CardPage = ({ players }) => {
     return sorted;
   }, [filteredPlayers, sortBy]);
 
-  // 統計各等級數量
   const tierStats = React.useMemo(() => {
     const stats = { diamond: 0, gold: 0, silver: 0, bronze: 0, normal: 0 };
     
@@ -170,7 +160,7 @@ export const CardPage = ({ players }) => {
       )
     ),
 
-    // 卡片網格（簡化版）
+    // 卡片網格
     sortedPlayers.length > 0 ? React.createElement('div', { 
       className: 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4' 
     },
@@ -189,9 +179,9 @@ export const CardPage = ({ players }) => {
       React.createElement('p', { className: 'font-bold' }, '沒有符合條件的球員卡')
     ),
 
-    // 詳細卡片 Modal
+    // 詳細卡片 Modal（置中）
     selectedPlayer && React.createElement('div', {
-      className: 'fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop modal-enter',
+      className: 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm',
       onClick: () => setSelectedPlayer(null)
     },
       React.createElement('div', {
