@@ -85,11 +85,17 @@
   </div>
 
   <script type="module">
-    import { setCurrentUser } from './js/user-service.js';
+    import { setCurrentUser } from './js/services/user-service.js';
 
     window.selectUser = function(userName) {
-      setCurrentUser(userName);
-      window.location.href = 'app.html';
+      console.log('選擇使用者:', userName);
+      const success = setCurrentUser(userName);
+      if (success) {
+        console.log('使用者設定成功，準備跳轉...');
+        window.location.href = 'app.html';
+      } else {
+        alert('設定使用者失敗，請重試');
+      }
     };
   </script>
 </body>
