@@ -20,33 +20,45 @@ function calculateAverageGrade(player) {
   return total / 8;
 }
 
+// 🔧 修正：放寬三級
 function getLetterGrade(average) {
-  if (average >= 6.7) return 'S';
-  if (average >= 6.3) return 'A+';
-  if (average >= 6.0) return 'A';
-  if (average >= 5.7) return 'A-';
-  if (average >= 5.3) return 'B+';
-  if (average >= 5.0) return 'B';
-  if (average >= 4.7) return 'B-';
-  if (average >= 4.3) return 'C+';
-  if (average >= 4.0) return 'C';
-  if (average >= 3.7) return 'C-';
-  if (average >= 3.3) return 'D+';
-  if (average >= 3.0) return 'D';
-  if (average >= 2.7) return 'D-';
-  if (average >= 2.3) return 'E+';
-  if (average >= 2.0) return 'E';
-  if (average >= 1.7) return 'E-';
+  if (average >= 6.4) return 'S';      // 原 6.7
+  if (average >= 6.0) return 'A+';     // 原 6.3
+  if (average >= 5.7) return 'A';      // 原 6.0
+  if (average >= 5.4) return 'A-';     // 原 5.7
+  if (average >= 5.0) return 'B+';     // 原 5.3
+  if (average >= 4.7) return 'B';      // 原 5.0
+  if (average >= 4.4) return 'B-';     // 原 4.7
+  if (average >= 4.0) return 'C+';     // 原 4.3
+  if (average >= 3.7) return 'C';      // 原 4.0
+  if (average >= 3.4) return 'C-';     // 原 3.7
+  if (average >= 3.0) return 'D+';     // 原 3.3
+  if (average >= 2.7) return 'D';      // 原 3.0
+  if (average >= 2.4) return 'D-';     // 原 2.7
+  if (average >= 2.0) return 'E+';     // 原 2.3
+  if (average >= 1.7) return 'E';      // 原 2.0
+  if (average >= 1.4) return 'E-';     // 原 1.7
   return 'F';
 }
 
+// 🔧 修正：卡片對應
 function getCardTier(letterGrade) {
-  const grade = letterGrade.replace(/[+-]/g, '');
-  if (grade === 'S') return 'diamond';
-  if (grade === 'A') return 'gold';
-  if (grade === 'B') return 'silver';
-  if (grade === 'C') return 'bronze';
+  if (letterGrade === 'S' || letterGrade === 'A+' || letterGrade === 'A' || letterGrade === 'A-') {
+    return 'diamond';
+  }
+  if (letterGrade.startsWith('B')) return 'gold';
+  if (letterGrade.startsWith('C')) return 'silver';
+  if (letterGrade.startsWith('D')) return 'bronze';
   return 'normal';
+}
+
+// 🔧 修正：能力值顏色
+function getStatColor(grade) {
+  if (grade === 'S') return 'text-red-400';      // S級：紅色
+  if (grade === 'A') return 'text-orange-400';   // A級：橘色
+  if (grade === 'B') return 'text-yellow-400';   // B級：黃色
+  if (grade === 'C') return 'text-slate-300';    // C級：銀色
+  return 'text-white';                            // D級以下：白色
 }
 
 function getGradeColor(letterGrade) {
@@ -69,8 +81,9 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
   const tier = getCardTier(letterGrade);
   const gradeColor = getGradeColor(letterGrade);
   
+  // 🔧 修正：改用 JPG
   const cardBgImage = `photo/card/${tier}.jpg`;
-  const playerImage = `photo/player/${player.name}.png`;
+  const playerImage = `photo/player/${player.name}.jpg`;
 
   if (compact) {
     // 簡化版（純百分比定位）
@@ -89,48 +102,37 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
       React.createElement('div', {
         className: 'absolute flex items-center justify-center',
         style: {
-          bottom: '14.5%',
-          left: '6.5%',
-          width: '13%',
+          bottom: '35.5%',
+          left: '7.5%',
+          width: '12%',
           aspectRatio: '1/1'
         }
       },
         React.createElement('span', {
           className: 'text-white font-black drop-shadow-lg',
           style: { 
-            fontSize: '0.65rem',
-            textShadow: '1px 1px 3px rgba(0,0,0,0.9)' 
+            fontSize: '1.18rem',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.9)' 
           }
         }, player.primaryPosition || '?')
       ),
-      
-      // 背號（純百分比）
-      React.createElement('div', {
-        className: 'text-white/25 font-black leading-none',
-        style: {
-          position: 'absolute',
-          top: '12%',
-          left: '6%',
-          fontSize: '1.5rem',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
-        }
-      }, player.number || '?'),
       
       // 球員照片（純百分比）
       React.createElement('div', {
         className: 'absolute overflow-hidden',
         style: {
-          bottom: '12%',
-          left: '50%',
+          bottom: '32.5%',
+          left: '53%',
           transform: 'translateX(-50%)',
-          width: '85%',
-          height: '75%'
+          width: '65%',
+          height: '65%'
         }
       },
         React.createElement('img', {
           src: playerImage,
           alt: player.name,
-          className: 'w-full h-full object-contain object-bottom drop-shadow-2xl',
+          className: 'w-full h-full object-contain object-bottom',
+          style: { filter: 'drop-shadow(0 20px 25px rgba(0, 0, 0, 0.5))' },
           onError: (e) => {
             e.target.style.display = 'none';
           }
@@ -142,14 +144,14 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
         style: {
           position: 'absolute',
           top: '5%',
-          right: '7%'
+          right: '8%'
         }
       },
         React.createElement('span', {
           className: `${gradeColor} font-black drop-shadow-lg`,
           style: { 
-            fontSize: '1.25rem',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.9)' 
+            fontSize: '2.3rem',
+            textShadow: '3px 3px 6px rgba(0,0,0,0.9)' 
           }
         }, letterGrade)
       ),
@@ -159,18 +161,60 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
         className: 'text-center',
         style: {
           position: 'absolute',
-          bottom: '6%',
+          top: '64.5%',
           left: '5%',
-          right: '5%'
+          right: '5%',
+          bottom: '17.5%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }
       },
-        React.createElement('p', {
-          className: 'text-white font-black drop-shadow-lg truncate',
+        React.createElement('h2', {
+          className: 'text-white font-black drop-shadow-lg',
           style: { 
-            fontSize: '1rem',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.9)' 
+            fontSize: '1.64rem',
+            letterSpacing: '0.33rem',
+            textShadow: '3px 3px 6px rgba(0,0,0,0.9)' 
           }
         }, player.name)
+      ),
+      
+      // 🆕 能力值網格（小卡也顯示）
+      React.createElement('div', {
+        className: 'absolute grid grid-cols-4',
+        style: {
+          top: '81%',
+          left: '19.5%',
+          right: '15%',
+          bottom: '7.5%',
+          gap: '27%',
+          rowGap: '27%'
+        }
+      },
+        [
+          player.grades.hitting,
+          player.grades.power,
+          player.grades.discipline,
+          player.grades.speed,
+          player.grades.defense,
+          player.grades.accuracy,
+          player.grades.armStrength,
+          player.grades.iq
+        ].map((grade, index) =>
+          React.createElement('div', {
+            key: index,
+            className: 'flex items-center justify-center'
+          },
+            React.createElement('span', {
+              className: `${getStatColor(grade)} font-black`,
+              style: { 
+                fontSize: '1.05rem',
+                textShadow: '2px 2px 4px rgba(0,0,0,0.9)' 
+              }
+            }, grade)
+          )
+        )
       )
     );
   }
@@ -191,48 +235,37 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
     React.createElement('div', {
       className: 'absolute flex items-center justify-center',
       style: {
-        bottom: '14.5%',
-        left: '6.5%',
-        width: '13%',
+        bottom: '35.5%',
+        left: '7.5%',
+        width: '12%',
         aspectRatio: '1/1'
       }
     },
       React.createElement('span', {
         className: 'text-white font-black drop-shadow-lg',
         style: { 
-          fontSize: '1.5rem',
+          fontSize: '1.8rem',
           textShadow: '2px 2px 4px rgba(0,0,0,0.9)' 
         }
       }, player.primaryPosition || '?')
     ),
     
-    // 背號（純百分比）
-    React.createElement('div', {
-      className: 'text-white/20 font-black leading-none pointer-events-none',
-      style: {
-        position: 'absolute',
-        top: '15%',
-        left: '6%',
-        fontSize: '3.75rem',
-        textShadow: '3px 3px 6px rgba(0,0,0,0.5)'
-      }
-    }, player.number || '?'),
-    
     // 球員照片（純百分比）
     React.createElement('div', {
       className: 'absolute overflow-hidden',
       style: {
-        bottom: '12%',
-        left: '50%',
+        bottom: '32.5%',
+        left: '53%',
         transform: 'translateX(-50%)',
-        width: '85%',
-        height: '75%'
+        width: '65%',
+        height: '65%'
       }
     },
       React.createElement('img', {
         src: playerImage,
         alt: player.name,
-        className: 'w-full h-full object-contain object-bottom drop-shadow-2xl',
+        className: 'w-full h-full object-contain object-bottom',
+        style: { filter: 'drop-shadow(0 20px 25px rgba(0, 0, 0, 0.5))' },
         onError: (e) => {
           e.target.style.display = 'none';
         }
@@ -244,91 +277,75 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
       style: {
         position: 'absolute',
         top: '5%',
-        right: '7%'
+        right: '8%'
       }
     },
       React.createElement('span', {
         className: `${gradeColor} font-black drop-shadow-2xl`,
         style: { 
-          fontSize: '3rem',
+          fontSize: '3.5rem',
           textShadow: '3px 3px 6px rgba(0,0,0,0.9)' 
         }
       }, letterGrade)
     ),
     
-    // 球員資訊（純百分比）
+    // 球員姓名（純百分比）
     React.createElement('div', {
+      className: 'text-center',
       style: {
         position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0
+        top: '64.5%',
+        left: '5%',
+        right: '5%',
+        bottom: '17.5%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
       }
     },
-      // 球員姓名（純百分比）
-      React.createElement('div', {
-        className: 'text-center',
-        style: {
-          marginBottom: '1.5%'
+      React.createElement('h2', {
+        className: 'text-white font-black drop-shadow-lg',
+        style: { 
+          fontSize: '2.5rem',
+          letterSpacing: '0.5rem',
+          textShadow: '3px 3px 6px rgba(0,0,0,0.9)' 
         }
-      },
-        React.createElement('h2', {
-          className: 'text-white font-black drop-shadow-lg',
-          style: { 
-            fontSize: '2.25rem',
-            paddingLeft: '5%',
-            paddingRight: '5%',
-            textShadow: '3px 3px 6px rgba(0,0,0,0.9)' 
-          }
-        }, player.name)
-      ),
-      
-      // 能力值網格（純百分比）
-      React.createElement('div', {
-        className: 'grid grid-cols-4',
-        style: {
-          gap: '1%',
-          paddingLeft: '6.5%',
-          paddingRight: '6.5%',
-          paddingBottom: '2%'
-        }
-      },
-        [
-          { label: '打擊', value: player.grades.hitting },
-          { label: '力量', value: player.grades.power },
-          { label: '選球', value: player.grades.discipline },
-          { label: '速度', value: player.grades.speed },
-          { label: '守備', value: player.grades.defense },
-          { label: '傳準', value: player.grades.accuracy },
-          { label: '臂力', value: player.grades.armStrength },
-          { label: '球商', value: player.grades.iq }
-        ].map(stat =>
-          React.createElement('div', {
-            key: stat.label,
-            className: 'text-center',
-            style: { paddingTop: '2%', paddingBottom: '2%' }
-          },
-            React.createElement('p', {
-              className: 'text-white/80 font-bold drop-shadow-sm',
-              style: { 
-                fontSize: '0.75rem',
-                marginBottom: '0.125rem',
-                textShadow: '1px 1px 2px rgba(0,0,0,0.7)' 
-              }
-            }, stat.label),
-            React.createElement('p', {
-              className: `font-black drop-shadow-lg ${
-                GRADE_VALUES[stat.value] >= 6 ? 'text-yellow-300' :
-                GRADE_VALUES[stat.value] >= 5 ? 'text-orange-300' :
-                GRADE_VALUES[stat.value] >= 4 ? 'text-blue-300' :
-                'text-slate-300'
-              }`,
-              style: { 
-                fontSize: '1.5rem',
-                textShadow: '2px 2px 4px rgba(0,0,0,0.9)' 
-              }
-            }, stat.value)
-          )
+      }, player.name)
+    ),
+    
+    // 能力值網格（純百分比）
+    React.createElement('div', {
+      className: 'absolute grid grid-cols-4',
+      style: {
+        top: '81%',
+        left: '19.5%',
+        right: '15%',
+        bottom: '7.5%',
+        gap: '27%',
+        rowGap: '27%'
+      }
+    },
+      [
+        { label: '打擊', value: player.grades.hitting },
+        { label: '力量', value: player.grades.power },
+        { label: '選球', value: player.grades.discipline },
+        { label: '速度', value: player.grades.speed },
+        { label: '守備', value: player.grades.defense },
+        { label: '傳準', value: player.grades.accuracy },
+        { label: '臂力', value: player.grades.armStrength },
+        { label: '球商', value: player.grades.iq }
+      ].map(stat =>
+        React.createElement('div', {
+          key: stat.label,
+          className: 'flex items-center justify-center'
+        },
+          React.createElement('span', {
+            className: `${getStatColor(stat.value)} font-black`,
+            style: { 
+              fontSize: '1.6rem',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.9)' 
+            }
+          }, stat.value)
         )
       )
     )
