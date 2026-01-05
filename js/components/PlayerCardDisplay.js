@@ -83,7 +83,7 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
   
   // 🔧 修正：改用 JPG
   const cardBgImage = `photo/card/${tier}.jpg`;
-  const playerImage = `photo/player/${player.name}.jpg`;
+  const playerImage = `photo/player/${player.name}.png`;
 
   if (compact) {
     // 簡化版（純百分比定位）
