@@ -1,19 +1,12 @@
 /**
  * 陣容邏輯服務模組
- * 處理自動排陣演算法
+ * 路徑：js/services/lineup-service.js
  */
 
 const ALL_POSITIONS = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'FE', 'DH1', 'DH2', 'DH3'];
 
-/**
- * 積分優先模式自動排陣
- * @param {Array} players - 球員陣列
- * @returns {Object} lineup
- */
 export function autoOptimizeByPoints(players) {
   const availablePlayers = players.filter(p => p.willAttend);
-  
-  // 按積分降序排列
   const sortedPlayers = [...availablePlayers].sort((a, b) => b.points - a.points);
   
   const newLineup = {};
@@ -22,7 +15,6 @@ export function autoOptimizeByPoints(players) {
   for (const player of sortedPlayers) {
     if (assigned.has(player.id)) continue;
     
-    // 1. 優先嘗試主要位置
     if (!newLineup[player.primaryPosition]) {
       newLineup[player.primaryPosition] = player.id;
       assigned.add(player.id);
@@ -30,12 +22,9 @@ export function autoOptimizeByPoints(players) {
       continue;
     }
     
-    // 2. 嘗試次要位置
     let positionAssigned = false;
-    
     for (const secondaryPos of (player.secondaryPositions || [])) {
       if (secondaryPos === 'DH') {
-        // 處理 DH 的特殊情況
         const dhPos = ['DH1', 'DH2', 'DH3'].find(dh => !newLineup[dh]);
         if (dhPos) {
           newLineup[dhPos] = player.id;
@@ -62,11 +51,6 @@ export function autoOptimizeByPoints(players) {
   return newLineup;
 }
 
-/**
- * 守備最佳化模式
- * @param {Array} players - 球員陣列
- * @returns {Object} lineup
- */
 export function autoOptimizeDefense(players) {
   const availablePlayers = players.filter(p => p.willAttend);
   const gradeValues = { S: 7, A: 6, B: 5, C: 4, D: 3, E: 2, F: 1 };
@@ -98,11 +82,6 @@ export function autoOptimizeDefense(players) {
   return newLineup;
 }
 
-/**
- * 打擊最大化模式
- * @param {Array} players - 球員陣列
- * @returns {Object} lineup
- */
 export function autoOptimizeOffense(players) {
   const availablePlayers = players.filter(p => p.willAttend);
   const gradeValues = { S: 7, A: 6, B: 5, C: 4, D: 3, E: 2, F: 1 };
@@ -136,11 +115,6 @@ export function autoOptimizeOffense(players) {
   return newLineup;
 }
 
-/**
- * 平衡模式
- * @param {Array} players - 球員陣列
- * @returns {Object} lineup
- */
 export function autoOptimizeBalanced(players) {
   const availablePlayers = players.filter(p => p.willAttend);
   const gradeValues = { S: 7, A: 6, B: 5, C: 4, D: 3, E: 2, F: 1 };
@@ -174,13 +148,6 @@ export function autoOptimizeBalanced(players) {
   return newLineup;
 }
 
-/**
- * 自動最佳化打序
- * @param {Object} lineup - 守備配置
- * @param {Array} players - 球員陣列
- * @param {boolean} pitcherBats - 投手是否打擊
- * @returns {Array} battingOrder
- */
 export function autoOptimizeBatting(lineup, players, pitcherBats) {
   const gradeValues = { S: 7, A: 6, B: 5, C: 4, D: 3, E: 2, F: 1 };
   
