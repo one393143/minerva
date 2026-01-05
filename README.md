@@ -40,7 +40,7 @@
 ### 前端
 - **React 18** - UI 框架
 - **Tailwind CSS** - 樣式框架
-- **Babel Standalone** - JSX 轉譯
+- **ES Modules** - 模組化架構
 
 ### 後端
 - **Firebase Firestore** - 雲端資料庫
@@ -50,15 +50,37 @@
 ```
 minerva/
 ├── index.html              # 使用者選擇頁面
-├── app.html                # 主應用程式
+├── app.html                # 主應用框架
 ├── css/
 │   └── styles.css          # 全域樣式
 ├── js/
-│   ├── firebase-config.js  # Firebase 配置
-│   ├── user-service.js     # 使用者管理
-│   ├── data-service.js     # 資料存取
-│   ├── lineup-service.js   # 陣容邏輯
-│   └── app.js              # 主程式
+│   ├── config/
+│   │   └── firebase-config.js
+│   ├── services/
+│   │   ├── user-service.js
+│   │   ├── data-service.js
+│   │   └── lineup-service.js
+│   ├── utils/
+│   │   ├── constants.js
+│   │   ├── helpers.js
+│   │   └── excel-utils.js
+│   ├── components/
+│   │   ├── GradeBar.js
+│   │   ├── PlayerCard.js
+│   │   ├── Header.js
+│   │   ├── Navigation.js
+│   │   └── Notification.js
+│   ├── pages/
+│   │   ├── FieldPage.js
+│   │   ├── BattingPage.js
+│   │   ├── RotationPage.js
+│   │   └── RosterPage.js
+│   ├── modals/
+│   │   ├── PositionSelectModal.js
+│   │   ├── PlayerEditModal.js
+│   │   ├── LineupHistoryModal.js
+│   │   └── RotationEditModal.js
+│   └── app.js              # 主程式入口
 └── README.md
 ```
 
@@ -66,17 +88,29 @@ minerva/
 
 ### GitHub Pages
 1. 推送程式碼到 GitHub
+```bash
+git add .
+git commit -m "完成模組化重構"
+git push origin main
+```
+
 2. 進入 Repository Settings
 3. Pages → Source → 選擇 `main` 分支
 4. 儲存後等待部署完成
 
 ### 本地開發
 ```bash
-# 使用任意 HTTP 伺服器
+# 使用 Python HTTP Server
 python -m http.server 8000
-# 或
+
+# 或使用 Node.js serve
 npx serve
+
+# 或使用 VS Code Live Server
+# 右鍵 index.html → Open with Live Server
 ```
+
+**注意：** 由於使用 ES Modules，必須透過 HTTP Server 運行，直接開啟 HTML 檔案會出現 CORS 錯誤。
 
 ## 📊 資料結構
 
@@ -95,7 +129,12 @@ npx serve
       grades: {
         hitting: 'S'|'A'|'B'|'C'|'D'|'E'|'F',
         power: ...,
-        // ... 8 項能力
+        discipline: ...,
+        speed: ...,
+        defense: ...,
+        accuracy: ...,
+        armStrength: ...,
+        iq: ...
       },
       willAttend: boolean,
       points: number
@@ -146,14 +185,31 @@ npx serve
 - **俊廷** 🧑‍🔬
 - **冠榮** 👨‍🏫
 
+## 🔧 開發指南
+
+### 新增功能模組
+1. 在對應資料夾建立新檔案（components/pages/modals）
+2. 使用 ES Module 匯出
+3. 在 app.js 中匯入並整合
+
+### 修改樣式
+- 全域樣式：編輯 `css/styles.css`
+- 元件樣式：使用 Tailwind CSS classes
+
+### 新增 Firebase 功能
+- 在 `services/data-service.js` 新增函數
+- 在 `app.js` 中呼叫
+
 ## 📝 更新日誌
 
 ### v2.0.0 (2026-01-05)
-- ✅ 模組化架構重構
+- ✅ 完整模組化架構重構
+- ✅ 拆分 20+ 個獨立模組
 - ✅ 使用者系統
 - ✅ 雲端同步優化
 - ✅ 積分優先模式
 - ✅ 陣容歷史管理
+- ✅ 改善可維護性與擴充性
 
 ### v1.0.0 (2025-12-XX)
 - ✅ 基礎功能實作
@@ -163,7 +219,7 @@ npx serve
 
 ## 📄 授權
 
-© 2026 minerva夢想家 - All Rights Reserved
+© 2026 極限棒球隊 - All Rights Reserved
 
 ---
 
