@@ -205,9 +205,9 @@ const App = () => {
         return obj;
       }, {}),
       willAttend: playerData.willAttend !== false,
-      points: playerData.points || 50
+      points: playerData.points ?? 0  // 🆕 修改：只有 undefined/null 才用 0
     };
-
+  
     if (playerData.id) {
       setPlayers(prev => prev.map(p => p.id === player.id ? player : p));
     } else {
@@ -603,7 +603,7 @@ const App = () => {
             return obj;
           }, {}),
           willAttend: true,
-          points: 50
+          points: 0
         }),
         onEditPlayer: setEditingPlayer,
         onDeletePlayer: handleDeletePlayer,
