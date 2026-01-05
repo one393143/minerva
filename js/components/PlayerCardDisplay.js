@@ -93,8 +93,9 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
   const tier = getCardTier(letterGrade);
   const gradeColor = getGradeColor(letterGrade);
   
-  const cardBgImage = `photos/card/${tier}.jpg`;
-  const playerImage = `photos/player/${player.name}.png`;
+  // 🔧 修正：photos → photo
+  const cardBgImage = `photo/card/${tier}.jpg`;
+  const playerImage = `photo/player/${player.name}.png`;
 
   if (compact) {
     // 簡化版（用於列表）
@@ -113,7 +114,7 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
         className: 'absolute top-3 left-3 w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-white/20'
       },
         React.createElement('img', {
-          src: 'photos/team-logo.png',
+          src: 'photo/team-logo.png',  // 🔧 修正：photos → photo
           alt: 'Team Logo',
           className: 'w-8 h-8 object-contain',
           onError: (e) => {
@@ -177,7 +178,7 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
       className: 'absolute top-6 left-6 w-20 h-20 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-white/20 shadow-xl'
     },
       React.createElement('img', {
-        src: 'photos/team-logo.png',
+        src: 'photo/team-logo.png',  // 🔧 修正：photos → photo
         alt: 'Team Logo',
         className: 'w-14 h-14 object-contain',
         onError: (e) => {
