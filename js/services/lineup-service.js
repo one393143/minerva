@@ -1,49 +1,51 @@
 /**
- * 陣容邏輯服務模組
+ * 陣容邏輯服務模組 - 支援投手與 DH 設定
  * 路徑：js/services/lineup-service.js
  */
 
-const ALL_POSITIONS = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'FE', 'DH1', 'DH2', 'DH3'];
+const ALL_POSITIONS = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'FE'];
 
-export function autoOptimizeByPoints(players) {
-  const availablePlayers = players.filter(p => p.willAttend);
+export function autoOptimizeByPoints(players, pitcherId, dhCount = 1) {
+  const availablePlayers = players.filter(p => p.willAttend && p.id !== pitcherId);
   const sortedPlayers = [...availablePlayers].sort((a, b) => b.points - a.points);
   
-  const newLineup = {};
-  const assigned = new Set();
+  const newLineup = { P: pitcherId };
+  const assigned = new Set([pitcherId]);
   
+  // 先排守備位置
   for (const player of sortedPlayers) {
     if (assigned.has(player.id)) continue;
     
-    if (!newLineup[player.primaryPosition]) {
+    if (!newLineup[player.primaryPosition] && ALL_POSITIONS.includes(player.primaryPosition)) {
       newLineup[player.primaryPosition] = player.id;
       assigned.add(player.id);
-      console.log(`✅ ${player.name} → ${player.primaryPosition} (主要位置)`);
       continue;
     }
     
     let positionAssigned = false;
     for (const secondaryPos of (player.secondaryPositions || [])) {
-      if (secondaryPos === 'DH') {
-        const dhPos = ['DH1', 'DH2', 'DH3'].find(dh => !newLineup[dh]);
-        if (dhPos) {
-          newLineup[dhPos] = player.id;
-          assigned.add(player.id);
-          console.log(`✅ ${player.name} → ${dhPos} (次要位置: DH)`);
-          positionAssigned = true;
-          break;
-        }
-      } else if (!newLineup[secondaryPos]) {
+      if (ALL_POSITIONS.includes(secondaryPos) && !newLineup[secondaryPos]) {
         newLineup[secondaryPos] = player.id;
         assigned.add(player.id);
-        console.log(`✅ ${player.name} → ${secondaryPos} (次要位置)`);
         positionAssigned = true;
         break;
       }
     }
     
-    if (!positionAssigned) {
-      console.log(`⚠️ ${player.name} 無可用位置`);
+    if (positionAssigned) continue;
+  }
+  
+  // 再排 DH
+  const dhPositions = [];
+  for (let i = 1; i <= dhCount; i++) {
+    dhPositions.push(`DH${i}`);
+  }
+  
+  for (const dhPos of dhPositions) {
+    const candidate = sortedPlayers.find(p => !assigned.has(p.id));
+    if (candidate) {
+      newLineup[dhPos] = candidate.id;
+      assigned.add(candidate.id);
     }
   }
   
@@ -51,8 +53,8 @@ export function autoOptimizeByPoints(players) {
   return newLineup;
 }
 
-export function autoOptimizeDefense(players) {
-  const availablePlayers = players.filter(p => p.willAttend);
+export function autoOptimizeDefense(players, pitcherId, dhCount = 1) {
+  const availablePlayers = players.filter(p => p.willAttend && p.id !== pitcherId);
   const gradeValues = { S: 7, A: 6, B: 5, C: 4, D: 3, E: 2, F: 1 };
   
   const sortedPlayers = [...availablePlayers].sort((a, b) => {
@@ -60,15 +62,15 @@ export function autoOptimizeDefense(players) {
     return gradeValues[b.grades.defense] - gradeValues[a.grades.defense];
   });
   
-  const newLineup = {};
-  const assigned = new Set();
+  const newLineup = { P: pitcherId };
+  const assigned = new Set([pitcherId]);
   
   for (const pos of ALL_POSITIONS) {
+    if (pos === 'P') continue;
     const candidate = sortedPlayers.find(p => {
       if (assigned.has(p.id)) return false;
       if (p.primaryPosition === pos) return true;
       if (p.secondaryPositions?.includes(pos)) return true;
-      if (pos.match(/^DH/) && p.secondaryPositions?.includes('DH')) return true;
       return false;
     });
     
@@ -78,12 +80,25 @@ export function autoOptimizeDefense(players) {
     }
   }
   
+  const dhPositions = [];
+  for (let i = 1; i <= dhCount; i++) {
+    dhPositions.push(`DH${i}`);
+  }
+  
+  for (const dhPos of dhPositions) {
+    const candidate = sortedPlayers.find(p => !assigned.has(p.id));
+    if (candidate) {
+      newLineup[dhPos] = candidate.id;
+      assigned.add(candidate.id);
+    }
+  }
+  
   console.log('🛡️ 守備最佳化完成', newLineup);
   return newLineup;
 }
 
-export function autoOptimizeOffense(players) {
-  const availablePlayers = players.filter(p => p.willAttend);
+export function autoOptimizeOffense(players, pitcherId, dhCount = 1) {
+  const availablePlayers = players.filter(p => p.willAttend && p.id !== pitcherId);
   const gradeValues = { S: 7, A: 6, B: 5, C: 4, D: 3, E: 2, F: 1 };
   
   const sortedPlayers = [...availablePlayers].sort((a, b) => {
@@ -93,15 +108,15 @@ export function autoOptimizeOffense(players) {
     return offenseB - offenseA;
   });
   
-  const newLineup = {};
-  const assigned = new Set();
+  const newLineup = { P: pitcherId };
+  const assigned = new Set([pitcherId]);
   
   for (const pos of ALL_POSITIONS) {
+    if (pos === 'P') continue;
     const candidate = sortedPlayers.find(p => {
       if (assigned.has(p.id)) return false;
       if (p.primaryPosition === pos) return true;
       if (p.secondaryPositions?.includes(pos)) return true;
-      if (pos.match(/^DH/) && p.secondaryPositions?.includes('DH')) return true;
       return false;
     });
     
@@ -111,12 +126,25 @@ export function autoOptimizeOffense(players) {
     }
   }
   
+  const dhPositions = [];
+  for (let i = 1; i <= dhCount; i++) {
+    dhPositions.push(`DH${i}`);
+  }
+  
+  for (const dhPos of dhPositions) {
+    const candidate = sortedPlayers.find(p => !assigned.has(p.id));
+    if (candidate) {
+      newLineup[dhPos] = candidate.id;
+      assigned.add(candidate.id);
+    }
+  }
+  
   console.log('⚔️ 打擊最大化完成', newLineup);
   return newLineup;
 }
 
-export function autoOptimizeBalanced(players) {
-  const availablePlayers = players.filter(p => p.willAttend);
+export function autoOptimizeBalanced(players, pitcherId, dhCount = 1) {
+  const availablePlayers = players.filter(p => p.willAttend && p.id !== pitcherId);
   const gradeValues = { S: 7, A: 6, B: 5, C: 4, D: 3, E: 2, F: 1 };
   
   const sortedPlayers = [...availablePlayers].sort((a, b) => {
@@ -126,20 +154,33 @@ export function autoOptimizeBalanced(players) {
     return avgB - avgA;
   });
   
-  const newLineup = {};
-  const assigned = new Set();
+  const newLineup = { P: pitcherId };
+  const assigned = new Set([pitcherId]);
   
   for (const pos of ALL_POSITIONS) {
+    if (pos === 'P') continue;
     const candidate = sortedPlayers.find(p => {
       if (assigned.has(p.id)) return false;
       if (p.primaryPosition === pos) return true;
       if (p.secondaryPositions?.includes(pos)) return true;
-      if (pos.match(/^DH/) && p.secondaryPositions?.includes('DH')) return true;
       return false;
     });
     
     if (candidate) {
       newLineup[pos] = candidate.id;
+      assigned.add(candidate.id);
+    }
+  }
+  
+  const dhPositions = [];
+  for (let i = 1; i <= dhCount; i++) {
+    dhPositions.push(`DH${i}`);
+  }
+  
+  for (const dhPos of dhPositions) {
+    const candidate = sortedPlayers.find(p => !assigned.has(p.id));
+    if (candidate) {
+      newLineup[dhPos] = candidate.id;
       assigned.add(candidate.id);
     }
   }
