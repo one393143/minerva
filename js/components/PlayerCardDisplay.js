@@ -152,7 +152,7 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
         }, letterGrade)
       ),
       
-      // 🔧 修正：球員姓名（加上背號）
+      // 球員姓名（加上背號）
       React.createElement('div', {
         className: 'text-center',
         style: {
@@ -176,18 +176,12 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
         }, `#${player.number} ${player.name}`)
       ),
       
-      // 🔧 修正：能力值網格（調整定位）
+      // 🔧 修正：能力值網格（調整 inset 和 gap）
       React.createElement('div', {
+        className: 'absolute grid grid-cols-4',
         style: {
-          position: 'absolute',
-          top: '81%',
-          left: '19.5%',
-          right: '15%',
-          bottom: '7.5%',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '8%',
-          rowGap: '15%'
+          inset: '81% 8% 7.5% 21.5%',  // ← 修正這裡
+          gap: '30%'                     // ← 修正這裡
         }
       },
         [
@@ -287,7 +281,7 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
       }, letterGrade)
     ),
     
-    // 🔧 修正：球員姓名（加上背號）
+    // 球員姓名（加上背號）
     React.createElement('div', {
       className: 'text-center',
       style: {
@@ -311,18 +305,12 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
       }, `#${player.number} ${player.name}`)
     ),
     
-    // 🔧 修正：能力值網格（調整定位與間距）
+    // 🔧 修正：能力值網格（調整 inset 和 gap）
     React.createElement('div', {
+      className: 'absolute grid grid-cols-4',
       style: {
-        position: 'absolute',
-        top: '81%',
-        left: '19.5%',
-        right: '15%',
-        bottom: '7.5%',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '8%',
-        rowGap: '15%'
+        inset: '81% 8% 7.5% 21.5%',  // ← 修正這裡
+        gap: '30%'                     // ← 修正這裡
       }
     },
       [
