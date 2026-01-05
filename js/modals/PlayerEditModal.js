@@ -96,7 +96,7 @@ export const PlayerEditModal = ({ player, onSave, onClose }) => {
             }, '積分'),
             React.createElement('input', {
               type: 'number',
-              value: editData.points || 50,
+              value: editData.points ?? 0 ,
               onChange: (e) => setEditData({ ...editData, points: parseInt(e.target.value) || 0 }),
               className: 'w-full bg-slate-800 rounded-2xl px-4 py-2.5 font-black outline-none border border-white/5 shadow-inner'
             })
