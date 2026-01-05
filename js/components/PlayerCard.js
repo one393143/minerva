@@ -1,5 +1,5 @@
 /**
- * 球員卡片元件 - 修正版
+ * 球員卡片元件 - 修正版（參考 HTML 樣式）
  */
 
 import { getCardRarity } from '../utils/helpers.js';
@@ -34,12 +34,7 @@ export const PlayerCard = ({
     },
       React.createElement('span', { className: 'text-[10px] font-black opacity-60' }, `#${player.number}`),
       React.createElement('span', { className: 'text-sm font-black truncate flex-1 text-slate-900' }, player.name),
-      React.createElement('span', { className: 'text-[9px] font-black bg-black/30 px-2 py-0.5 rounded uppercase text-white' }, player.primaryPosition),
-      // 刪除按鈕（精簡版）
-      onDelete && React.createElement('button', {
-        onClick: handleDeleteClick,
-        className: 'text-sm opacity-50 hover:opacity-100 transition-opacity hover:scale-110'
-      }, '❌')
+      React.createElement('span', { className: 'text-[9px] font-black bg-black/30 px-2 py-0.5 rounded uppercase text-white' }, player.primaryPosition)
     );
   }
 
@@ -47,11 +42,11 @@ export const PlayerCard = ({
     onClick,
     className: `relative flex flex-col p-4 rounded-2xl border-2 transition-all ${onClick ? 'cursor-pointer' : ''} active:scale-95 bg-gradient-to-br ${rarity} border-white/10 card-shadow ${selected ? 'ring-4 ring-cyan-400 border-white' : ''} ${!player.willAttend ? 'opacity-40' : ''}`
   },
-    // 🆕 刪除按鈕（絕對定位在右上角）
+    // 🆕 刪除按鈕（參考 HTML 樣式）
     onDelete && React.createElement('button', {
       onClick: handleDeleteClick,
-      className: 'absolute top-2 right-2 z-20 text-lg opacity-60 hover:opacity-100 transition-all hover:scale-125 active:scale-95'
-    }, '❌'),
+      className: 'absolute -top-1 -right-1 bg-red-600 w-8 h-8 rounded-full text-white font-black text-lg shadow-xl z-30 transition-all active:scale-90 flex items-center justify-center cursor-pointer border-2 border-white'
+    }, '×'),
 
     React.createElement('div', { className: 'flex justify-between items-start mb-2 relative z-10' },
       React.createElement('div', { className: 'flex flex-col' },
