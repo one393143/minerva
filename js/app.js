@@ -35,6 +35,7 @@ import { PositionSelectModal } from './modals/PositionSelectModal.js';
 import { PlayerEditModal } from './modals/PlayerEditModal.js';
 import { LineupHistoryModal } from './modals/LineupHistoryModal.js';
 import { RotationEditModal } from './modals/RotationEditModal.js';
+import { AutoOptimizeModal } from './modals/AutoOptimizeModal.js';
 
 const { useState, useEffect, useMemo } = React;
 
@@ -193,6 +194,7 @@ const App = () => {
     const player = {
       ...playerData,
       id: playerData.id || generateId(),
+      primaryPosition: playerData.primaryPosition || 'P',  // 加入預設值
       secondaryPositions: playerData.secondaryPositions || [],
       grades: playerData.grades || STAT_NAMES.reduce((obj, stat) => {
         obj[stat] = 'C';
@@ -201,7 +203,7 @@ const App = () => {
       willAttend: playerData.willAttend !== false,
       points: playerData.points || 50
     };
-
+  
     if (playerData.id) {
       setPlayers(prev => prev.map(p => p.id === player.id ? player : p));
     } else {
@@ -261,9 +263,9 @@ const App = () => {
 
   // ==================== 陣容管理 ====================
   const handleUploadLineup = async () => {
-    const name = window.prompt('請輸入陣容名稱：\n範例：1/4(日）冬盟G3 VS卡吐司');
+    const name = window.prompt('請輸入陣容名稱：', '1/4(日）冬盟G3 VS卡吐司');
     if (!name || name.trim() === '') return;
-
+  
     try {
       await saveLineup(
         { lineup, battingOrder, rotations, pitcherBats },
@@ -301,22 +303,20 @@ const App = () => {
   };
 
   // ==================== 守備位置 ====================
-  const handleAutoOptimize = (mode) => {
-    if (!window.confirm(`使用「${mode}」模式自動最佳化守備位置？`)) return;
-    
+  const handleAutoOptimize = (mode, pitcherId, dhCount) => {
     let newLineup = {};
     switch (mode) {
       case '積分優先':
-        newLineup = autoOptimizeByPoints(players);
+        newLineup = autoOptimizeByPoints(players, pitcherId, dhCount);
         break;
       case '守備最佳化':
-        newLineup = autoOptimizeDefense(players);
+        newLineup = autoOptimizeDefense(players, pitcherId, dhCount);
         break;
       case '打擊最大化':
-        newLineup = autoOptimizeOffense(players);
+        newLineup = autoOptimizeOffense(players, pitcherId, dhCount);
         break;
       case '平衡模式':
-        newLineup = autoOptimizeBalanced(players);
+        newLineup = autoOptimizeBalanced(players, pitcherId, dhCount);
         break;
     }
     
