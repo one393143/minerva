@@ -1,5 +1,5 @@
 /**
- * 陣容自動最佳化服務 - 使用匈牙利演算法
+ * 陣容自動最佳化服務 - 完整修正版
  * 檔案位置: js/services/lineup-service.js
  */
 
@@ -8,42 +8,137 @@ import { ALL_POSITIONS, POSITION_OPTIONS } from '../utils/constants.js';
 const GRADE_VALUES = { S: 7, A: 6, B: 5, C: 4, D: 3, E: 2, F: 1 };
 
 /**
- * 計算球員在特定位置的適性分數
+ * 計算球員的守備能力分數
+ */
+function getDefenseScore(player) {
+  return (
+    GRADE_VALUES[player.grades.defense] * 3 +
+    GRADE_VALUES[player.grades.accuracy] * 2 +
+    GRADE_VALUES[player.grades.armStrength] * 2 +
+    GRADE_VALUES[player.grades.iq] * 1
+  );
+}
+
+/**
+ * 計算球員的打擊能力分數
+ */
+function getOffenseScore(player) {
+  return (
+    GRADE_VALUES[player.grades.hitting] * 3 +
+    GRADE_VALUES[player.grades.power] * 3 +
+    GRADE_VALUES[player.grades.discipline] * 2
+  );
+}
+
+/**
+ * 計算球員在特定位置的適性分數（守備模式專用）
+ */
+function getPositionFitScoreForDefense(player, position) {
+  const defenseGrade = GRADE_VALUES[player.grades.defense];
+  
+  // 投手位置特殊處理
+  if (position === 'P') {
+    if (player.primaryPosition === 'P') return 300;
+    if (player.secondaryPositions?.includes('P')) return 150;
+    return 0; // 非投手完全不能守投手
+  }
+  
+  // FE (游擊手替補) 特殊處理
+  if (position === 'FE') {
+    if (['SS', '2B', '3B'].includes(player.primaryPosition)) return 200;
+    if (player.secondaryPositions?.some(p => ['SS', '2B', '3B'].includes(p))) return 100;
+    if (defenseGrade >= 4) return 50; // 守備 C 以上可以守 FE
+    return 10;
+  }
+  
+  // DH 特殊處理
+  if (position.startsWith('DH')) {
+    return 50; // DH 不需要守備，給予基本分
+  }
+  
+  // 一般位置：守備能力 C 以上可以守任何位置
+  if (defenseGrade >= 4) {
+    if (player.primaryPosition === position) return 300;
+    if (player.secondaryPositions?.includes(position)) return 200;
+    return 100; // 守備好的球員可以守任何位置
+  } else {
+    if (player.primaryPosition === position) return 300;
+    if (player.secondaryPositions?.includes(position)) return 200;
+    return 0; // 守備差的球員不能亂守
+  }
+}
+
+/**
+ * 計算球員在特定位置的適性分數（打擊模式專用）
+ */
+function getPositionFitScoreForOffense(player, position) {
+  const defenseGrade = GRADE_VALUES[player.grades.defense];
+  
+  // 投手位置特殊處理
+  if (position === 'P') {
+    if (player.primaryPosition === 'P') return 300;
+    if (player.secondaryPositions?.includes('P')) return 150;
+    return 0; // 非投手完全不能守投手
+  }
+  
+  // FE (游擊手替補) 特殊處理
+  if (position === 'FE') {
+    if (['SS', '2B', '3B'].includes(player.primaryPosition)) return 200;
+    if (player.secondaryPositions?.some(p => ['SS', '2B', '3B'].includes(p))) return 100;
+    if (defenseGrade >= 4) return 50; // 守備 C 以上可以守 FE
+    return 10;
+  }
+  
+  // DH 特殊處理
+  if (position.startsWith('DH')) {
+    return 300; // DH 最適合打擊好的球員
+  }
+  
+  // 一般位置：守備能力 C 以上可以守任何位置
+  if (defenseGrade >= 4) {
+    if (player.primaryPosition === position) return 300;
+    if (player.secondaryPositions?.includes(position)) return 200;
+    return 100; // 守備好的球員可以守任何位置
+  } else {
+    if (player.primaryPosition === position) return 300;
+    if (player.secondaryPositions?.includes(position)) return 200;
+    return 0; // 守備差的球員不能亂守
+  }
+}
+
+/**
+ * 計算球員在特定位置的適性分數（一般模式）
  */
 function getPositionFitScore(player, position) {
   // 投手位置特殊處理
   if (position === 'P') {
     if (player.primaryPosition === 'P') return 1000;
     if (player.secondaryPositions?.includes('P')) return 500;
-    return 0; // 非投手完全不能守投手
+    return 0;
   }
   
   // FE (游擊手替補) 特殊處理
   if (position === 'FE') {
     if (['SS', '2B', '3B'].includes(player.primaryPosition)) return 800;
     if (player.secondaryPositions?.some(p => ['SS', '2B', '3B'].includes(p))) return 400;
-    return 100; // 任何人都可以當 FE，但內野手優先
+    return 100;
   }
   
   // DH 特殊處理
   if (position.startsWith('DH')) {
     if (player.secondaryPositions?.includes('DH')) return 300;
-    return 100; // 任何人都可以當 DH
+    return 100;
   }
   
   // 一般位置
   if (player.primaryPosition === position) return 1000;
   if (player.secondaryPositions?.includes(position)) return 300;
   
-  return 0; // 完全不適合
+  return 0;
 }
 
 /**
  * 匈牙利演算法核心函數
- * @param {Array} players - 球員陣列
- * @param {Array} positions - 位置陣列
- * @param {Function} scoringFunction - 評分函數 (player, position) => score
- * @returns {Object} lineup - { position: playerId }
  */
 function hungarianAssignment(players, positions, scoringFunction) {
   if (players.length === 0 || positions.length === 0) {
@@ -62,7 +157,7 @@ function hungarianAssignment(players, positions, scoringFunction) {
       const position = positions[j];
       
       if (!player || !position) {
-        row.push(0); // 虛擬球員或虛擬位置
+        row.push(0);
       } else {
         const score = scoringFunction(player, position);
         row.push(score);
@@ -94,12 +189,10 @@ function hungarianAssignment(players, positions, scoringFunction) {
     const player = players[playerIdx];
     const position = positions[posIdx];
     
-    // 跳過虛擬配對
     if (!player || !position) continue;
     
     const score = scoreMatrix[playerIdx][posIdx];
     
-    // 跳過分數為 0 的配對（完全不適合）
     if (score === 0) continue;
     
     lineup[position] = player.id;
@@ -114,7 +207,6 @@ function hungarianAssignment(players, positions, scoringFunction) {
 
 /**
  * 積分優先模式
- * 策略：前 N 名積分最高的球員必須上場（N = 場上位置數）
  */
 export function autoOptimizeByPoints(players, pitcherId, dhCount = 1) {
   console.log('🎯 積分優先排陣開始');
@@ -127,7 +219,6 @@ export function autoOptimizeByPoints(players, pitcherId, dhCount = 1) {
     return { P: pitcherId };
   }
 
-  // 計算需要的位置
   const positions = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'FE'];
   for (let i = 1; i <= dhCount; i++) {
     positions.push(`DH${i}`);
@@ -136,7 +227,6 @@ export function autoOptimizeByPoints(players, pitcherId, dhCount = 1) {
 
   console.log(`📍 需要填滿 ${N} 個位置:`, positions);
 
-  // 選出積分前 N-1 名球員（扣除投手）
   let topPlayers = availablePlayers
     .filter(p => p.id !== pitcherId)
     .sort((a, b) => b.points - a.points)
@@ -144,7 +234,6 @@ export function autoOptimizeByPoints(players, pitcherId, dhCount = 1) {
 
   console.log('🏆 積分前 N-1 名球員:', topPlayers.map(p => `${p.name}(${p.points})`));
 
-  // 嘗試最多 5 次遞補
   let attempt = 0;
   let lineup = null;
 
@@ -153,7 +242,6 @@ export function autoOptimizeByPoints(players, pitcherId, dhCount = 1) {
     
     console.log(`🔄 第 ${attempt + 1} 次嘗試，候選球員:`, candidates.map(p => p.name));
 
-    // 評分函數：位置適性 >> 積分
     const scoringFunction = (player, position) => {
       const fitScore = getPositionFitScore(player, position);
       if (fitScore === 0) return 0;
@@ -163,16 +251,13 @@ export function autoOptimizeByPoints(players, pitcherId, dhCount = 1) {
 
     lineup = hungarianAssignment(candidates, positions, scoringFunction);
 
-    // 檢查是否成功填滿所有位置
     const filledCount = Object.keys(lineup).length;
     console.log(`✅ 已填滿 ${filledCount}/${N} 個位置`);
 
     if (filledCount >= N - 1) {
-      // 允許最多 1 個位置空缺
       break;
     }
 
-    // 遞補下一位球員
     const nextPlayer = availablePlayers
       .filter(p => p.id !== pitcherId && !topPlayers.some(tp => tp.id === p.id))
       .sort((a, b) => b.points - a.points)[0];
@@ -192,8 +277,7 @@ export function autoOptimizeByPoints(players, pitcherId, dhCount = 1) {
 }
 
 /**
- * 守備最佳化模式
- * 策略：每個位置選守備能力最強的球員
+ * 守備最佳化模式（修正版）
  */
 export function autoOptimizeDefense(players, pitcherId, dhCount = 1) {
   console.log('🛡️ 守備最佳化開始');
@@ -211,62 +295,134 @@ export function autoOptimizeDefense(players, pitcherId, dhCount = 1) {
     positions.push(`DH${i}`);
   }
 
-  // 評分函數：位置適性 >> 守備能力
   const scoringFunction = (player, position) => {
-    const fitScore = getPositionFitScore(player, position);
+    const fitScore = getPositionFitScoreForDefense(player, position);
     if (fitScore === 0) return 0;
     
-    const defenseScore = 
-      GRADE_VALUES[player.grades.defense] * 3 +
-      GRADE_VALUES[player.grades.accuracy] * 2 +
-      GRADE_VALUES[player.grades.armStrength] * 2 +
-      GRADE_VALUES[player.grades.iq] * 1;
+    const defenseScore = getDefenseScore(player);
     
-    return fitScore * 1000 + defenseScore * 10;
+    // 守備能力權重 >> 位置適性權重
+    return defenseScore * 100 + fitScore;
   };
 
   const lineup = hungarianAssignment(availablePlayers, positions, scoringFunction);
+  
+  // 顯示守備分析
+  console.log('🛡️ 守備分析:');
+  Object.entries(lineup).forEach(([pos, playerId]) => {
+    const player = availablePlayers.find(p => p.id === playerId);
+    if (player) {
+      const defScore = getDefenseScore(player);
+      const fitScore = getPositionFitScoreForDefense(player, pos);
+      console.log(`${pos}: ${player.name} (守備:${defScore}, 適性:${fitScore}, 總分:${defScore * 100 + fitScore})`);
+    }
+  });
   
   console.log('🛡️ 守備最佳化完成');
   return lineup;
 }
 
 /**
- * 火力最大化模式
- * 策略：每個位置選打擊能力最強的球員（包含投手位置）
+ * 火力最大化模式（修正版）
+ * 策略：打擊好的球員優先上場，但投手必須由使用者指定
  */
 export function autoOptimizeOffense(players, pitcherId, dhCount = 1) {
   console.log('⚔️ 火力最大化開始');
   
   const availablePlayers = players.filter(p => p.willAttend);
+  const pitcher = availablePlayers.find(p => p.id === pitcherId);
+  
+  if (!pitcher) {
+    console.error('❌ 找不到指定的投手');
+    return { P: pitcherId };
+  }
 
   const positions = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'FE'];
   for (let i = 1; i <= dhCount; i++) {
     positions.push(`DH${i}`);
   }
+  const N = positions.length;
 
-  // 評分函數：位置適性 >> 打擊能力
-  const scoringFunction = (player, position) => {
-    const fitScore = getPositionFitScore(player, position);
-    if (fitScore === 0) return 0;
-    
-    const offenseScore = 
-      GRADE_VALUES[player.grades.hitting] * 3 +
-      GRADE_VALUES[player.grades.power] * 3 +
-      GRADE_VALUES[player.grades.discipline] * 2;
-    
-    return fitScore * 1000 + offenseScore * 10;
-  };
+  console.log(`📍 需要填滿 ${N} 個位置:`, positions);
 
-  const lineup = hungarianAssignment(availablePlayers, positions, scoringFunction);
+  // 🆕 選出打擊前 N-1 名球員（扣除投手）
+  let topHitters = availablePlayers
+    .filter(p => p.id !== pitcherId)
+    .sort((a, b) => {
+      const scoreA = getOffenseScore(a);
+      const scoreB = getOffenseScore(b);
+      return scoreB - scoreA;
+    })
+    .slice(0, N - 1);
+
+  console.log('🏆 打擊前 N-1 名球員:', topHitters.map(p => {
+    const offScore = getOffenseScore(p);
+    return `${p.name}(打擊:${offScore})`;
+  }));
+
+  let attempt = 0;
+  let lineup = null;
+
+  while (attempt < 5) {
+    const candidates = [pitcher, ...topHitters];
+    
+    console.log(`🔄 第 ${attempt + 1} 次嘗試，候選球員:`, candidates.map(p => p.name));
+
+    const scoringFunction = (player, position) => {
+      const fitScore = getPositionFitScoreForOffense(player, position);
+      if (fitScore === 0) return 0;
+      
+      const offenseScore = getOffenseScore(player);
+      
+      // 🔑 打擊能力權重 >> 位置適性權重
+      return offenseScore * 100 + fitScore;
+    };
+
+    lineup = hungarianAssignment(candidates, positions, scoringFunction);
+
+    const filledCount = Object.keys(lineup).length;
+    console.log(`✅ 已填滿 ${filledCount}/${N} 個位置`);
+
+    if (filledCount >= N - 1) {
+      break;
+    }
+
+    // 遞補下一位打擊好的球員
+    const nextHitter = availablePlayers
+      .filter(p => p.id !== pitcherId && !topHitters.some(tp => tp.id === p.id))
+      .sort((a, b) => {
+        const scoreA = getOffenseScore(a);
+        const scoreB = getOffenseScore(b);
+        return scoreB - scoreA;
+      })[0];
+
+    if (!nextHitter) {
+      console.warn('⚠️ 沒有更多球員可遞補');
+      break;
+    }
+
+    console.log(`🔄 遞補球員: ${nextHitter.name}(打擊:${getOffenseScore(nextHitter)})`);
+    topHitters[topHitters.length - 1] = nextHitter;
+    attempt++;
+  }
+
+  // 顯示打擊分析
+  console.log('⚔️ 打擊分析:');
+  Object.entries(lineup).forEach(([pos, playerId]) => {
+    const player = availablePlayers.find(p => p.id === playerId);
+    if (player) {
+      const offScore = getOffenseScore(player);
+      const fitScore = getPositionFitScoreForOffense(player, pos);
+      console.log(`${pos}: ${player.name} (打擊:${offScore}, 適性:${fitScore}, 總分:${offScore * 100 + fitScore})`);
+    }
+  });
   
   console.log('⚔️ 火力最大化完成');
-  return lineup;
+  return lineup || { P: pitcherId };
 }
 
 /**
  * 平衡模式
- * 策略：綜合考慮所有能力 + 積分
  */
 export function autoOptimizeBalanced(players, pitcherId, dhCount = 1) {
   console.log('⚖️ 平衡模式開始');
@@ -284,7 +440,6 @@ export function autoOptimizeBalanced(players, pitcherId, dhCount = 1) {
     positions.push(`DH${i}`);
   }
 
-  // 評分函數：位置適性 >> 綜合能力 >> 積分
   const scoringFunction = (player, position) => {
     const fitScore = getPositionFitScore(player, position);
     if (fitScore === 0) return 0;
@@ -303,7 +458,7 @@ export function autoOptimizeBalanced(players, pitcherId, dhCount = 1) {
 }
 
 /**
- * 打序最佳化（維持原邏輯）
+ * 打序最佳化
  */
 export function autoOptimizeBatting(lineup, players, pitcherBats) {
   console.log('⚡ 打序最佳化開始');
@@ -321,7 +476,7 @@ export function autoOptimizeBatting(lineup, players, pitcherBats) {
   let pool = [...activeOnField];
   let optimized = [];
   
-  // 1-2棒：速度 + 選球 + 打擊（上壘能力）
+  // 1-2棒：速度 + 選球 + 打擊
   pool.sort((a, b) => {
     const scoreA = 
       GRADE_VALUES[a.player.grades.speed] * 2 +
@@ -339,7 +494,7 @@ export function autoOptimizeBatting(lineup, players, pitcherBats) {
   });
   for (let i = 0; i < 2 && pool.length > 0; i++) optimized.push(pool.shift());
   
-  // 3-5棒：力量 + 打擊（長打能力）
+  // 3-5棒：力量 + 打擊
   pool.sort((a, b) => {
     const scoreA = 
       GRADE_VALUES[a.player.grades.power] * 2 +
