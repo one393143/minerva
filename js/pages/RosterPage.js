@@ -1,5 +1,5 @@
 /**
- * 球員名單頁面 - 加入積分更新功能
+ * 球員名單頁面 - 修正點擊事件
  */
 
 import { PlayerCard } from '../components/PlayerCard.js';
@@ -14,7 +14,7 @@ export const RosterPage = ({
   onImportExcel,
   onToggleAllAttendance,
   onDeleteAll,
-  onUpdatePoints  // 新增
+  onUpdatePoints
 }) => {
   return React.createElement('div', { className: 'animate-slide-up space-y-6' },
     // Header
@@ -56,7 +56,7 @@ export const RosterPage = ({
           })
         ),
 
-        // 🆕 更新積分按鈕
+        // 更新積分按鈕
         React.createElement('button', {
           onClick: onUpdatePoints,
           className: 'text-xs font-black bg-yellow-700/50 text-yellow-400 px-4 py-2 rounded-full border border-yellow-500/30 btn-primary shadow-lg'
@@ -87,9 +87,9 @@ export const RosterPage = ({
       players.length > 0 ? players.map(player =>
         React.createElement(PlayerCard, {
           key: player.id,
-          player,
-          onEdit: () => onEditPlayer(player),
-          onDelete: () => onDeletePlayer(player.id)
+          player: player,
+          onEdit: onEditPlayer,
+          onDelete: onDeletePlayer
         })
       ) : React.createElement('div', {
         className: 'col-span-full text-center py-12'
