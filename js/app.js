@@ -28,6 +28,7 @@ import { FieldPage } from './pages/FieldPage.js';
 import { BattingPage } from './pages/BattingPage.js';
 import { RotationPage } from './pages/RotationPage.js';
 import { RosterPage } from './pages/RosterPage.js';
+import { CardPage } from './pages/CardPage.js';  // 🆕 加入這行
 
 // Modals
 import { PositionSelectModal } from './modals/PositionSelectModal.js';
