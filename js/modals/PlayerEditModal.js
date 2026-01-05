@@ -1,5 +1,5 @@
 /**
- * 球員編輯 Modal - 優化版（手機友善）
+ * 球員編輯 Modal - 最終優化版
  */
 
 import { POSITION_OPTIONS, GRADE_OPTIONS, STAT_NAMES, STAT_LABELS } from '../utils/constants.js';
@@ -13,7 +13,7 @@ export const PlayerEditModal = ({ player, onSave, onClose }) => {
   });
 
   const handleSave = () => {
-    if (!editData.name) {
+    if (!editData.name || !editData.name.trim()) {
       alert('請輸入球員姓名');
       return;
     }
