@@ -1,5 +1,5 @@
 /**
- * 球員卡顯示組件 - 優化版
+ * 球員卡顯示組件 - 精確對齊底圖版
  * 檔案位置: js/components/PlayerCardDisplay.js
  */
 
@@ -97,9 +97,9 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
   const playerImage = `photo/player/${player.name}.png`;
 
   if (compact) {
-    // 簡化版（等比例縮小）
+    // 簡化版（精確等比例縮小）
     return React.createElement('div', {
-      className: 'relative w-full aspect-[2/3] rounded-2xl overflow-hidden shadow-xl cursor-pointer transform transition-all hover:scale-105 hover:shadow-2xl'
+      className: 'relative w-full aspect-[2/3] rounded-xl overflow-hidden shadow-lg cursor-pointer transform transition-all hover:scale-105 hover:shadow-2xl'
     },
       // 背景圖
       React.createElement('img', {
@@ -108,54 +108,59 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
         className: 'absolute inset-0 w-full h-full object-cover'
       }),
       
-      // 左下角守備位置方框
+      // 守備位置（對齊底圖左下方框，縮小版）
       React.createElement('div', {
-        className: 'absolute bottom-[18%] left-[8%] w-[15%] aspect-square bg-slate-700/80 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/20'
+        className: 'absolute bottom-[14.5%] left-[6.5%] w-[13%] aspect-square flex items-center justify-center'
       },
         React.createElement('span', {
-          className: 'text-white font-black text-xs'
+          className: 'text-white font-black text-[0.65rem] drop-shadow-lg',
+          style: { textShadow: '1px 1px 3px rgba(0,0,0,0.9)' }
         }, player.primaryPosition || '?')
       ),
       
-      // 背號（左上角，遠離邊緣）
+      // 背號（左上角，下移避免重疊）
       React.createElement('div', {
-        className: 'absolute top-[8%] left-[8%] text-white/20 font-black text-3xl leading-none',
+        className: 'absolute top-[12%] left-[6%] text-white/25 font-black text-2xl leading-none',
         style: { textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }
       }, player.number || '?'),
       
-      // 球員照片
-      React.createElement('img', {
-        src: playerImage,
-        alt: player.name,
-        className: 'absolute bottom-[15%] left-1/2 transform -translate-x-1/2 w-[70%] h-[70%] object-contain drop-shadow-2xl',
-        onError: (e) => {
-          e.target.style.display = 'none';
-        }
-      }),
+      // 球員照片（上移並裁切）
+      React.createElement('div', {
+        className: 'absolute bottom-[12%] left-1/2 transform -translate-x-1/2 w-[85%] h-[75%] overflow-hidden'
+      },
+        React.createElement('img', {
+          src: playerImage,
+          alt: player.name,
+          className: 'w-full h-full object-contain object-bottom drop-shadow-2xl',
+          onError: (e) => {
+            e.target.style.display = 'none';
+          }
+        })
+      ),
       
       // 右上角評級（無底色）
       React.createElement('div', {
-        className: 'absolute top-[5%] right-[8%]'
+        className: 'absolute top-[5%] right-[7%]'
       },
         React.createElement('span', {
-          className: `${gradeColor} font-black text-2xl drop-shadow-lg`,
-          style: { textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }
+          className: `${gradeColor} font-black text-xl drop-shadow-lg`,
+          style: { textShadow: '2px 2px 4px rgba(0,0,0,0.9)' }
         }, letterGrade)
       ),
       
       // 球員姓名（底部中央，對齊底圖）
       React.createElement('div', {
-        className: 'absolute bottom-[8%] left-0 right-0 text-center'
+        className: 'absolute bottom-[6%] left-0 right-0 text-center px-2'
       },
         React.createElement('p', {
-          className: 'text-white font-black text-sm drop-shadow-lg',
-          style: { textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }
+          className: 'text-white font-black text-base drop-shadow-lg truncate',
+          style: { textShadow: '2px 2px 4px rgba(0,0,0,0.9)' }
         }, player.name)
       )
     );
   }
 
-  // 完整版（詳細展示）
+  // 完整版（詳細展示，精確對齊底圖）
   return React.createElement('div', {
     className: 'relative w-full aspect-[2/3] rounded-3xl overflow-hidden shadow-2xl'
   },
@@ -166,29 +171,30 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
       className: 'absolute inset-0 w-full h-full object-cover'
     }),
     
-    // 左下角守備位置方框
+    // 守備位置（對齊底圖左下方框）
     React.createElement('div', {
-      className: 'absolute bottom-[18%] left-[8%] w-[15%] aspect-square bg-slate-700/80 backdrop-blur-sm rounded-xl flex items-center justify-center border-2 border-white/20 shadow-xl'
+      className: 'absolute bottom-[14.5%] left-[6.5%] w-[13%] aspect-square flex items-center justify-center'
     },
       React.createElement('span', {
-        className: 'text-white font-black text-2xl'
+        className: 'text-white font-black text-2xl drop-shadow-lg',
+        style: { textShadow: '2px 2px 4px rgba(0,0,0,0.9)' }
       }, player.primaryPosition || '?')
     ),
     
-    // 背號（左上角，遠離邊緣）
+    // 背號（左上角，下移避免重疊 Logo）
     React.createElement('div', {
-      className: 'absolute top-[8%] left-[8%] text-white/20 font-black text-7xl leading-none pointer-events-none',
+      className: 'absolute top-[15%] left-[6%] text-white/20 font-black text-6xl leading-none pointer-events-none',
       style: { textShadow: '3px 3px 6px rgba(0,0,0,0.5)' }
     }, player.number || '?'),
     
-    // 球員照片
+    // 球員照片（上移並裁切到名字欄位）
     React.createElement('div', {
-      className: 'absolute inset-0 flex items-end justify-center pb-[18%]'
+      className: 'absolute bottom-[12%] left-1/2 transform -translate-x-1/2 w-[85%] h-[75%] overflow-hidden'
     },
       React.createElement('img', {
         src: playerImage,
         alt: player.name,
-        className: 'w-[75%] h-[75%] object-contain drop-shadow-2xl',
+        className: 'w-full h-full object-contain object-bottom drop-shadow-2xl',
         onError: (e) => {
           e.target.style.display = 'none';
         }
@@ -197,7 +203,7 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
     
     // 右上角評級（無底色）
     React.createElement('div', {
-      className: 'absolute top-[6%] right-[8%]'
+      className: 'absolute top-[5%] right-[7%]'
     },
       React.createElement('span', {
         className: `${gradeColor} font-black text-5xl drop-shadow-2xl`,
@@ -207,25 +213,21 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
     
     // 球員資訊（底部，對齊底圖）
     React.createElement('div', {
-      className: 'absolute bottom-0 left-0 right-0 pb-[3%]'
+      className: 'absolute bottom-0 left-0 right-0'
     },
-      // 姓名與背號（對齊底圖中央）
+      // 球員姓名（放大，對齊底圖中央）
       React.createElement('div', {
-        className: 'text-center mb-[2%]'
+        className: 'text-center mb-[1.5%]'
       },
         React.createElement('h2', {
-          className: 'text-white font-black text-3xl mb-1 drop-shadow-lg',
-          style: { textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }
-        }, player.name),
-        React.createElement('p', {
-          className: 'text-white/80 font-bold text-lg drop-shadow-md',
-          style: { textShadow: '1px 1px 3px rgba(0,0,0,0.7)' }
-        }, `NO.${player.number || '?'} • ${player.primaryPosition || '?'}`)
+          className: 'text-white font-black text-4xl drop-shadow-lg px-4',
+          style: { textShadow: '3px 3px 6px rgba(0,0,0,0.9)' }
+        }, player.name)
       ),
       
-      // 能力值網格（對齊底圖預設位置）
+      // 能力值網格（精確對齊底圖 2x4 格子）
       React.createElement('div', {
-        className: 'grid grid-cols-4 gap-[2%] px-[5%]'
+        className: 'grid grid-cols-4 gap-x-[1%] gap-y-[0.5%] px-[6.5%] pb-[2%]'
       },
         [
           { label: '打擊', value: player.grades.hitting },
@@ -239,20 +241,20 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
         ].map(stat =>
           React.createElement('div', {
             key: stat.label,
-            className: 'text-center'
+            className: 'text-center py-1'
           },
             React.createElement('p', {
-              className: 'text-white/70 text-xs font-bold mb-1 drop-shadow-sm',
-              style: { textShadow: '1px 1px 2px rgba(0,0,0,0.6)' }
+              className: 'text-white/80 text-xs font-bold mb-0.5 drop-shadow-sm',
+              style: { textShadow: '1px 1px 2px rgba(0,0,0,0.7)' }
             }, stat.label),
             React.createElement('p', {
               className: `font-black text-2xl drop-shadow-lg ${
-                GRADE_VALUES[stat.value] >= 6 ? 'text-yellow-400' :
-                GRADE_VALUES[stat.value] >= 5 ? 'text-orange-400' :
-                GRADE_VALUES[stat.value] >= 4 ? 'text-blue-400' :
+                GRADE_VALUES[stat.value] >= 6 ? 'text-yellow-300' :
+                GRADE_VALUES[stat.value] >= 5 ? 'text-orange-300' :
+                GRADE_VALUES[stat.value] >= 4 ? 'text-blue-300' :
                 'text-slate-300'
               }`,
-              style: { textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }
+              style: { textShadow: '2px 2px 4px rgba(0,0,0,0.9)' }
             }, stat.value)
           )
         )
