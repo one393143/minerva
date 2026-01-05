@@ -1,6 +1,5 @@
 /**
- * 極限棒球陣容大師 - 主程式入口
- * 整合所有模組
+ * 極限棒球陣容大師 - 主程式入口 (完整更新版)
  */
 
 // Services
@@ -35,7 +34,6 @@ import { PositionSelectModal } from './modals/PositionSelectModal.js';
 import { PlayerEditModal } from './modals/PlayerEditModal.js';
 import { LineupHistoryModal } from './modals/LineupHistoryModal.js';
 import { RotationEditModal } from './modals/RotationEditModal.js';
-import { AutoOptimizeModal } from './modals/AutoOptimizeModal.js';
 
 const { useState, useEffect, useMemo } = React;
 
@@ -194,7 +192,7 @@ const App = () => {
     const player = {
       ...playerData,
       id: playerData.id || generateId(),
-      primaryPosition: playerData.primaryPosition || 'P',  // 加入預設值
+      primaryPosition: playerData.primaryPosition || 'P',
       secondaryPositions: playerData.secondaryPositions || [],
       grades: playerData.grades || STAT_NAMES.reduce((obj, stat) => {
         obj[stat] = 'C';
@@ -203,7 +201,7 @@ const App = () => {
       willAttend: playerData.willAttend !== false,
       points: playerData.points || 50
     };
-  
+
     if (playerData.id) {
       setPlayers(prev => prev.map(p => p.id === player.id ? player : p));
     } else {
@@ -265,7 +263,7 @@ const App = () => {
   const handleUploadLineup = async () => {
     const name = window.prompt('請輸入陣容名稱：', '1/4(日）冬盟G3 VS卡吐司');
     if (!name || name.trim() === '') return;
-  
+
     try {
       await saveLineup(
         { lineup, battingOrder, rotations, pitcherBats },
@@ -566,6 +564,7 @@ const App = () => {
       activeTab === 'roster' && React.createElement(RosterPage, {
         players,
         onAddPlayer: () => setEditingPlayer({
+          primaryPosition: 'P',
           secondaryPositions: [],
           grades: STAT_NAMES.reduce((obj, stat) => {
             obj[stat] = 'C';
