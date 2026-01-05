@@ -20,28 +20,26 @@ function calculateAverageGrade(player) {
   return total / 8;
 }
 
-// 🔧 修正：放寬三級
 function getLetterGrade(average) {
-  if (average >= 6.4) return 'S';      // 原 6.7
-  if (average >= 6.0) return 'A+';     // 原 6.3
-  if (average >= 5.7) return 'A';      // 原 6.0
-  if (average >= 5.4) return 'A-';     // 原 5.7
-  if (average >= 5.0) return 'B+';     // 原 5.3
-  if (average >= 4.7) return 'B';      // 原 5.0
-  if (average >= 4.4) return 'B-';     // 原 4.7
-  if (average >= 4.0) return 'C+';     // 原 4.3
-  if (average >= 3.7) return 'C';      // 原 4.0
-  if (average >= 3.4) return 'C-';     // 原 3.7
-  if (average >= 3.0) return 'D+';     // 原 3.3
-  if (average >= 2.7) return 'D';      // 原 3.0
-  if (average >= 2.4) return 'D-';     // 原 2.7
-  if (average >= 2.0) return 'E+';     // 原 2.3
-  if (average >= 1.7) return 'E';      // 原 2.0
-  if (average >= 1.4) return 'E-';     // 原 1.7
+  if (average >= 6.4) return 'S';
+  if (average >= 6.0) return 'A+';
+  if (average >= 5.7) return 'A';
+  if (average >= 5.4) return 'A-';
+  if (average >= 5.0) return 'B+';
+  if (average >= 4.7) return 'B';
+  if (average >= 4.4) return 'B-';
+  if (average >= 4.0) return 'C+';
+  if (average >= 3.7) return 'C';
+  if (average >= 3.4) return 'C-';
+  if (average >= 3.0) return 'D+';
+  if (average >= 2.7) return 'D';
+  if (average >= 2.4) return 'D-';
+  if (average >= 2.0) return 'E+';
+  if (average >= 1.7) return 'E';
+  if (average >= 1.4) return 'E-';
   return 'F';
 }
 
-// 🔧 修正：卡片對應
 function getCardTier(letterGrade) {
   if (letterGrade === 'S' || letterGrade === 'A+' || letterGrade === 'A' || letterGrade === 'A-') {
     return 'diamond';
@@ -52,13 +50,12 @@ function getCardTier(letterGrade) {
   return 'normal';
 }
 
-// 🔧 修正：能力值顏色
 function getStatColor(grade) {
-  if (grade === 'S') return 'text-red-400';      // S級：紅色
-  if (grade === 'A') return 'text-orange-400';   // A級：橘色
-  if (grade === 'B') return 'text-yellow-400';   // B級：黃色
-  if (grade === 'C') return 'text-slate-300';    // C級：銀色
-  return 'text-white';                            // D級以下：白色
+  if (grade === 'S') return 'text-red-400';
+  if (grade === 'A') return 'text-orange-400';
+  if (grade === 'B') return 'text-yellow-400';
+  if (grade === 'C') return 'text-slate-300';
+  return 'text-white';
 }
 
 function getGradeColor(letterGrade) {
@@ -81,7 +78,6 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
   const tier = getCardTier(letterGrade);
   const gradeColor = getGradeColor(letterGrade);
   
-  // 🔧 修正：改用 JPG
   const cardBgImage = `photo/card/${tier}.jpg`;
   const playerImage = `photo/player/${player.name}.png`;
 
@@ -156,7 +152,7 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
         }, letterGrade)
       ),
       
-      // 球員姓名（純百分比）
+      // 🔧 修正：球員姓名（加上背號）
       React.createElement('div', {
         className: 'text-center',
         style: {
@@ -177,19 +173,21 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
             letterSpacing: '0.33rem',
             textShadow: '3px 3px 6px rgba(0,0,0,0.9)' 
           }
-        }, player.name)
+        }, `#${player.number} ${player.name}`)
       ),
       
-      // 🆕 能力值網格（小卡也顯示）
+      // 🔧 修正：能力值網格（調整定位）
       React.createElement('div', {
-        className: 'absolute grid grid-cols-4',
         style: {
+          position: 'absolute',
           top: '81%',
           left: '19.5%',
           right: '15%',
           bottom: '7.5%',
-          gap: '27%',
-          rowGap: '27%'
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: '8%',
+          rowGap: '15%'
         }
       },
         [
@@ -289,7 +287,7 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
       }, letterGrade)
     ),
     
-    // 球員姓名（純百分比）
+    // 🔧 修正：球員姓名（加上背號）
     React.createElement('div', {
       className: 'text-center',
       style: {
@@ -310,19 +308,21 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
           letterSpacing: '0.5rem',
           textShadow: '3px 3px 6px rgba(0,0,0,0.9)' 
         }
-      }, player.name)
+      }, `#${player.number} ${player.name}`)
     ),
     
-    // 能力值網格（純百分比）
+    // 🔧 修正：能力值網格（調整定位與間距）
     React.createElement('div', {
-      className: 'absolute grid grid-cols-4',
       style: {
+        position: 'absolute',
         top: '81%',
         left: '19.5%',
         right: '15%',
         bottom: '7.5%',
-        gap: '27%',
-        rowGap: '27%'
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        gap: '8%',
+        rowGap: '15%'
       }
     },
       [
