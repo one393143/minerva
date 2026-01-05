@@ -1,5 +1,5 @@
 /**
- * Google Sheets 資料服務
+ * Google Sheets 資料服務 - 修正版
  * 路徑：js/services/google-sheets-service.js
  */
 
@@ -122,7 +122,7 @@ export function updatePlayersPoints(players, pointsMap) {
     } else {
       notFoundCount++;
       console.warn(`⚠️ 找不到球員「${player.name}」的積分，設為 0`);
-      return { ...player, points: 0 };
+      return { ...player, points: 0 };  // 🆕 修改：未找到設為 0
     }
   });
   
