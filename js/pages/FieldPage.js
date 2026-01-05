@@ -1,5 +1,5 @@
 /**
- * 守備配置頁面 - 修改版（支援火力最大化模式）
+ * 守備配置頁面 - 說明文字修正版
  * 檔案位置: js/pages/FieldPage.js
  */
 
@@ -24,16 +24,15 @@ export const FieldPage = ({
     p.primaryPosition === 'P' || p.secondaryPositions?.includes('P')
   );
 
-  // 當 Modal 開啟時，設定預設投手（火力最大化模式除外）
+  // 當 Modal 開啟時，設定預設投手
   React.useEffect(() => {
-    if (showOptimizeModal && showOptimizeModal !== '打擊最大化' && pitchers.length > 0 && !selectedPitcher) {
+    if (showOptimizeModal && pitchers.length > 0 && !selectedPitcher) {
       setSelectedPitcher(pitchers[0].id);
     }
   }, [showOptimizeModal, pitchers.length]);
 
   const handleOptimizeClick = (mode) => {
-    // 🆕 火力最大化模式不需要檢查投手
-    if (mode !== '打擊最大化' && pitchers.length === 0) {
+    if (pitchers.length === 0) {
       alert('請先新增投手球員');
       return;
     }
@@ -41,8 +40,7 @@ export const FieldPage = ({
   };
 
   const handleOptimizeConfirm = () => {
-    // 🆕 火力最大化模式不需要選投手
-    if (showOptimizeModal !== '打擊最大化' && !selectedPitcher) {
+    if (!selectedPitcher) {
       alert('請選擇先發投手');
       return;
     }
@@ -76,6 +74,48 @@ export const FieldPage = ({
         )
       )
     );
+  };
+
+  // 🆕 根據不同模式顯示不同的說明文字
+  const getModalDescription = () => {
+    switch (showOptimizeModal) {
+      case '積分優先':
+        return [
+          '• 積分最高的前 N 名球員必須上場',
+          '• 先發投手將被排在 P 位置',
+          `• DH 數量決定 DH1~DH${dhCount} 的配置`,
+          '• 其他位置依據「位置適性 + 積分」自動排列'
+        ];
+      
+      case '守備最佳化':
+        return [
+          '• 守備能力最強的球員優先上場',
+          '• 守備 C 以上可以守任何位置',
+          '• 先發投手將被排在 P 位置',
+          `• DH 數量決定 DH1~DH${dhCount} 的配置`,
+          '• 目標：場上守備總分最高'
+        ];
+      
+      case '打擊最大化':
+        return [
+          '• 打擊能力最強的球員優先上場',
+          '• 守備 C 以上可以守任何位置',
+          '• 先發投手將被排在 P 位置',
+          `• DH 數量決定 DH1~DH${dhCount} 的配置`,
+          '• 目標：場上打擊總分最高'
+        ];
+      
+      case '平衡模式':
+        return [
+          '• 綜合考慮所有能力 + 積分',
+          '• 先發投手將被排在 P 位置',
+          `• DH 數量決定 DH1~DH${dhCount} 的配置`,
+          '• 目標：場上總體能力最均衡'
+        ];
+      
+      default:
+        return [];
+    }
   };
 
   return React.createElement('div', { className: 'animate-slide-up space-y-8' },
@@ -158,8 +198,8 @@ export const FieldPage = ({
         }, `${showOptimizeModal} - 設定`),
 
         React.createElement('div', { className: 'space-y-6' },
-          // 🆕 火力最大化模式時隱藏投手選擇器
-          showOptimizeModal !== '打擊最大化' && React.createElement('div', { className: 'space-y-2' },
+          // 投手選擇器
+          React.createElement('div', { className: 'space-y-2' },
             React.createElement('label', {
               className: 'text-xs font-black text-slate-400 uppercase'
             }, '先發投手 (Starting Pitcher)'),
@@ -193,16 +233,14 @@ export const FieldPage = ({
             )
           ),
 
-          // 說明文字
+          // 🆕 動態說明文字
           React.createElement('div', {
             className: 'bg-slate-800/50 rounded-xl p-3 text-xs text-slate-400'
           },
-            React.createElement('p', { className: 'font-bold mb-1' }, '💡 提示：'),
-            showOptimizeModal === '打擊最大化' 
-              ? React.createElement('p', null, '• 火力最大化模式會自動選擇打擊能力最強的球員守投手位置')
-              : React.createElement('p', null, `• 先發投手將被排在 P 位置`),
-            React.createElement('p', null, `• DH 數量決定 DH1~DH${dhCount} 的配置`),
-            React.createElement('p', null, `• 其他位置將依據「${showOptimizeModal}」規則自動排列`)
+            React.createElement('p', { className: 'font-bold mb-2' }, '💡 提示：'),
+            ...getModalDescription().map((text, idx) =>
+              React.createElement('p', { key: idx, className: 'mb-1' }, text)
+            )
           )
         ),
 
