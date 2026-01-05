@@ -48,7 +48,7 @@ export const importFromExcel = (file, callback) => {
           secondaryPositions: d.次要位置 ? String(d.次要位置).split(',') : [],
           grades,
           willAttend: d.會到場 === '是',
-          points: d.積分 || 50
+          points: d.積分 ?? 0 
         };
       });
       
