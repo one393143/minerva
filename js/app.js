@@ -35,6 +35,12 @@ import { PlayerEditModal } from './modals/PlayerEditModal.js';
 import { LineupHistoryModal } from './modals/LineupHistoryModal.js';
 import { RotationEditModal } from './modals/RotationEditModal.js';
 
+// 🆕 加入 Google Sheets 服務
+import { 
+  fetchPlayerPointsFromGoogleSheets, 
+  updatePlayersPoints 
+} from './services/google-sheets-service.js';
+
 const { useState, useEffect, useMemo } = React;
 
 // ==================== 主應用元件 ====================
@@ -477,6 +483,32 @@ const App = () => {
     showNotification('✅ 已換人');
   };
 
+   // 🆕 在 App 元件中加入處理函數
+  const handleUpdatePoints = async () => {
+    if (!window.confirm('確定要從 Google Sheets 更新球員積分？\n⚠️ 這將覆蓋現有積分資料')) return;
+    
+    try {
+      showNotification('📊 正在從 Google Sheets 載入積分...');
+      
+      // 1. 從 Google Sheets 讀取積分
+      const pointsMap = await fetchPlayerPointsFromGoogleSheets();
+      
+      // 2. 更新球員積分
+      const updatedPlayers = updatePlayersPoints(players, pointsMap);
+      
+      // 3. 更新 state
+      setPlayers(updatedPlayers);
+      
+      // 4. 顯示成功訊息
+      const updatedCount = Object.keys(pointsMap).length;
+      showNotification(`✅ 已更新 ${updatedCount} 位球員積分`, 5000);
+      
+    } catch (error) {
+      console.error('更新積分失敗:', error);
+      showNotification('❌ 更新失敗：' + error.message);
+    }
+  };
+  
   const handleSubstitutePitcher = (rotId, newPitcherId) => {
     setRotations(prev => prev.map(rot => {
       if (rot.id !== rotId) return rot;
@@ -579,7 +611,8 @@ const App = () => {
         onExportExcel: handleExportExcel,
         onImportExcel: handleImportExcel,
         onToggleAllAttendance: handleToggleAllAttendance,
-        onDeleteAll: handleDeleteAll
+        onDeleteAll: handleDeleteAll,
+        onUpdatePoints: handleUpdatePoints  // 🆕 加入這行
       })
     ),
 
