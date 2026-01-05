@@ -1,5 +1,5 @@
 /**
- * 陣容邏輯服務模組 - 支援投手與 DH 設定
+ * 陣容邏輯服務模組 - 完整版
  * 路徑：js/services/lineup-service.js
  */
 
@@ -36,12 +36,8 @@ export function autoOptimizeByPoints(players, pitcherId, dhCount = 1) {
   }
   
   // 再排 DH
-  const dhPositions = [];
   for (let i = 1; i <= dhCount; i++) {
-    dhPositions.push(`DH${i}`);
-  }
-  
-  for (const dhPos of dhPositions) {
+    const dhPos = `DH${i}`;
     const candidate = sortedPlayers.find(p => !assigned.has(p.id));
     if (candidate) {
       newLineup[dhPos] = candidate.id;
@@ -80,12 +76,8 @@ export function autoOptimizeDefense(players, pitcherId, dhCount = 1) {
     }
   }
   
-  const dhPositions = [];
   for (let i = 1; i <= dhCount; i++) {
-    dhPositions.push(`DH${i}`);
-  }
-  
-  for (const dhPos of dhPositions) {
+    const dhPos = `DH${i}`;
     const candidate = sortedPlayers.find(p => !assigned.has(p.id));
     if (candidate) {
       newLineup[dhPos] = candidate.id;
@@ -126,12 +118,8 @@ export function autoOptimizeOffense(players, pitcherId, dhCount = 1) {
     }
   }
   
-  const dhPositions = [];
   for (let i = 1; i <= dhCount; i++) {
-    dhPositions.push(`DH${i}`);
-  }
-  
-  for (const dhPos of dhPositions) {
+    const dhPos = `DH${i}`;
     const candidate = sortedPlayers.find(p => !assigned.has(p.id));
     if (candidate) {
       newLineup[dhPos] = candidate.id;
@@ -172,12 +160,8 @@ export function autoOptimizeBalanced(players, pitcherId, dhCount = 1) {
     }
   }
   
-  const dhPositions = [];
   for (let i = 1; i <= dhCount; i++) {
-    dhPositions.push(`DH${i}`);
-  }
-  
-  for (const dhPos of dhPositions) {
+    const dhPos = `DH${i}`;
     const candidate = sortedPlayers.find(p => !assigned.has(p.id));
     if (candidate) {
       newLineup[dhPos] = candidate.id;
