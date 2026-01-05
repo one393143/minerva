@@ -1,5 +1,5 @@
 /**
- * 球員名單頁面 - 修正點擊事件
+ * 球員名單頁面 - 修正 onClick 傳遞
  */
 
 import { PlayerCard } from '../components/PlayerCard.js';
@@ -88,8 +88,9 @@ export const RosterPage = ({
         React.createElement(PlayerCard, {
           key: player.id,
           player: player,
-          onEdit: onEditPlayer,
-          onDelete: onDeletePlayer
+          onClick: () => onEditPlayer(player),  // ✅ 改為 onClick
+          showGrades: true,
+          showSecondary: true
         })
       ) : React.createElement('div', {
         className: 'col-span-full text-center py-12'
