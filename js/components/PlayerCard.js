@@ -1,5 +1,5 @@
 /**
- * 球員卡片元件 - 加入刪除按鈕
+ * 球員卡片元件 - 修正版
  */
 
 import { getCardRarity } from '../utils/helpers.js';
@@ -39,7 +39,7 @@ export const PlayerCard = ({
       onDelete && React.createElement('button', {
         onClick: handleDeleteClick,
         className: 'text-sm opacity-50 hover:opacity-100 transition-opacity hover:scale-110'
-      }, '🗑️')
+      }, '❌')
     );
   }
 
@@ -47,18 +47,19 @@ export const PlayerCard = ({
     onClick,
     className: `relative flex flex-col p-4 rounded-2xl border-2 transition-all ${onClick ? 'cursor-pointer' : ''} active:scale-95 bg-gradient-to-br ${rarity} border-white/10 card-shadow ${selected ? 'ring-4 ring-cyan-400 border-white' : ''} ${!player.willAttend ? 'opacity-40' : ''}`
   },
+    // 🆕 刪除按鈕（絕對定位在右上角）
+    onDelete && React.createElement('button', {
+      onClick: handleDeleteClick,
+      className: 'absolute top-2 right-2 z-20 text-lg opacity-60 hover:opacity-100 transition-all hover:scale-125 active:scale-95'
+    }, '❌'),
+
     React.createElement('div', { className: 'flex justify-between items-start mb-2 relative z-10' },
       React.createElement('div', { className: 'flex flex-col' },
         React.createElement('span', { className: 'text-[10px] font-black uppercase opacity-70 text-slate-900' }, `No.${player.number}`),
         React.createElement('h3', { className: 'text-lg font-black drop-shadow-md leading-tight text-slate-900' }, player.name)
       ),
       React.createElement('div', { className: 'flex items-center gap-2' },
-        React.createElement('div', { className: 'bg-black/30 px-2 py-1 rounded-lg font-black text-[11px] text-white' }, player.primaryPosition),
-        // 刪除按鈕
-        onDelete && React.createElement('button', {
-          onClick: handleDeleteClick,
-          className: 'text-lg opacity-50 hover:opacity-100 transition-opacity hover:scale-110 active:scale-95'
-        }, '🗑️')
+        React.createElement('div', { className: 'bg-black/30 px-2 py-1 rounded-lg font-black text-[11px] text-white' }, player.primaryPosition)
       )
     ),
     showSecondary && player.secondaryPositions && player.secondaryPositions.length > 0 &&
