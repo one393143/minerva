@@ -4,6 +4,7 @@
  */
 
 import { ALL_POSITIONS, FIELD_POSITIONS } from '../utils/constants.js';
+import { getCardRarity } from '../utils/helpers.js';
 import { PlayerCard } from '../components/PlayerCard.js';
 
 export const FieldPage = ({
@@ -13,7 +14,8 @@ export const FieldPage = ({
   onPositionClick,
   onAutoOptimize,
   onUploadLineup,
-  onLoadLineupHistory
+  onLoadLineupHistory,
+  onPlayerClick // 🆕 接收 onPlayerClick
 }) => {
   const [showOptimizeModal, setShowOptimizeModal] = React.useState(null);
   const [selectedPitcher, setSelectedPitcher] = React.useState('');
@@ -59,6 +61,15 @@ export const FieldPage = ({
   const renderFieldSlot = (pos, top, left) => {
     const player = availablePlayers.find(x => x.id === lineup[pos]);
 
+    // 取得等級顏色 (預設為灰白色)
+    const rarityColor = (player && player.grades)
+      ? getCardRarity(player.grades)
+      : 'from-black/40 to-black/60';
+
+    const borderColor = (player && player.grades && player.grades.defense)
+      ? (player.grades.defense === 'S' || player.grades.defense === 'A' ? 'border-purple-400' : 'border-white/20')
+      : 'border-white/20';
+
     return React.createElement('div', {
       key: pos,
       onClick: () => onPositionClick(pos),
@@ -66,10 +77,10 @@ export const FieldPage = ({
       style: { top, left }
     },
       React.createElement('div', {
-        className: `w-14 h-14 md:w-16 md:h-16 rounded-full border-2 flex flex-col items-center justify-center transition-all ${player ? 'bg-slate-900 border-yellow-400 scale-110 shadow-lg' : 'bg-black/30 border-white/20'}`
+        className: `w-14 h-14 md:w-16 md:h-16 rounded-full border-2 flex flex-col items-center justify-center transition-all bg-gradient-to-br ${player ? `${rarityColor} scale-110 shadow-lg border-white/40` : 'from-black/40 to-black/60 border-white/20'}`
       },
-        React.createElement('span', { className: 'text-[10px] font-black opacity-50' }, pos),
-        React.createElement('span', { className: 'text-[11px] font-bold truncate px-1 text-white' },
+        React.createElement('span', { className: `text-[10px] font-black ${player ? 'text-white/80' : 'text-white/30'} uppercase` }, pos),
+        React.createElement('span', { className: `text-[11px] font-bold truncate px-1 ${player ? 'text-white drop-shadow-md' : 'text-white/30'}` },
           player ? player.name : '+'
         )
       )
@@ -160,13 +171,15 @@ export const FieldPage = ({
       React.createElement('div', { className: 'grid grid-cols-3 gap-3' },
         ['DH1', 'DH2', 'DH3'].map(dh => {
           const player = availablePlayers.find(x => x.id === lineup[dh]);
+          const rarityColor = player ? getCardRarity(player.grades) : '';
+
           return React.createElement('div', {
             key: dh,
             onClick: () => onPositionClick(dh),
-            className: `p-4 rounded-2xl border-2 flex flex-col items-center justify-center transition-all cursor-pointer ${lineup[dh] ? 'bg-indigo-900/80 border-indigo-400 shadow-md' : 'bg-slate-900 border-slate-800 opacity-60'}`
+            className: `p-4 rounded-2xl border-2 flex flex-col items-center justify-center transition-all cursor-pointer bg-gradient-to-br ${player ? `${rarityColor} border-white/30 shadow-md` : 'bg-slate-900 border-slate-800 opacity-60'}`
           },
-            React.createElement('span', { className: 'text-[10px] text-white/40 font-black mb-1 uppercase' }, dh),
-            React.createElement('span', { className: 'text-sm font-black truncate text-white' },
+            React.createElement('span', { className: `text-[10px] font-black mb-1 uppercase ${player ? 'text-white/80' : 'text-white/40'}` }, dh),
+            React.createElement('span', { className: 'text-sm font-black truncate text-white drop-shadow-md' },
               player?.name || '---'
             )
           );
@@ -181,7 +194,12 @@ export const FieldPage = ({
 
         React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3' },
           bench.length > 0 ? bench.map(p =>
-            React.createElement(PlayerCard, { key: p.id, player: p, compact: true })
+            React.createElement(PlayerCard, {
+              key: p.id,
+              player: p,
+              compact: true,
+              onClick: () => onPlayerClick(p) // 🆕 點擊顯示詳細資料
+            })
           ) : React.createElement('p', {
             className: 'col-span-full text-center text-xs text-slate-700 py-6 font-bold uppercase tracking-widest'
           }, 'Empty Bench')

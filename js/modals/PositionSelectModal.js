@@ -4,6 +4,9 @@
 
 import { PlayerCard } from '../components/PlayerCard.js';
 
+// 修正：移除解構，直接使用 React.useEffect
+// const { useEffect, useRef } = React; 
+
 export const PositionSelectModal = ({
   position,
   lineup,
@@ -12,6 +15,15 @@ export const PositionSelectModal = ({
   onClear,
   onClose
 }) => {
+  const selectedRef = React.useRef(null);
+
+  // 自動捲動到已選擇的球員
+  React.useEffect(() => {
+    if (selectedRef.current) {
+      selectedRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, []);
+
   if (!position) return null;
 
   return React.createElement('div', {
@@ -36,14 +48,19 @@ export const PositionSelectModal = ({
       ),
 
       React.createElement('div', { className: 'space-y-4 pb-12' },
-        sortedPlayers.length > 0 ? sortedPlayers.map(p =>
-          React.createElement(PlayerCard, {
+        sortedPlayers.length > 0 ? sortedPlayers.map(p => {
+          const isSelected = lineup[position] === p.id;
+          return React.createElement('div', {
             key: p.id,
-            player: p,
-            selected: lineup[position] === p.id,
-            onClick: () => onSelect(p.id)
-          })
-        ) : React.createElement('p', {
+            ref: isSelected ? selectedRef : null // 設定 ref
+          },
+            React.createElement(PlayerCard, {
+              player: p,
+              selected: isSelected,
+              onClick: () => onSelect(p.id)
+            })
+          );
+        }) : React.createElement('p', {
           className: 'text-center py-24 text-slate-700 font-black italic uppercase tracking-widest'
         }, 'No available players'),
 

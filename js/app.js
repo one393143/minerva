@@ -5,12 +5,12 @@
 // Services
 import { getCurrentUser, clearCurrentUser } from './services/user-service.js';
 import { loadPlayers, savePlayers, loadLineups, saveLineup, loadLineup } from './services/data-service.js';
-import { 
-  autoOptimizeByPoints, 
-  autoOptimizeDefense, 
-  autoOptimizeOffense, 
+import {
+  autoOptimizeByPoints,
+  autoOptimizeDefense,
+  autoOptimizeOffense,
   autoOptimizeBalanced,
-  autoOptimizeBatting 
+  autoOptimizeBatting
 } from './services/lineup-service.js';
 
 // Utils
@@ -33,13 +33,16 @@ import { CardPage } from './pages/CardPage.js';  // 🆕 加入這行
 // Modals
 import { PositionSelectModal } from './modals/PositionSelectModal.js';
 import { PlayerEditModal } from './modals/PlayerEditModal.js';
+import { PlayerDetailCard } from './modals/PlayerDetailCard.js'; // 🆕 新增
 import { LineupHistoryModal } from './modals/LineupHistoryModal.js';
 import { RotationEditModal } from './modals/RotationEditModal.js';
+import { AutoRotationModal } from './modals/AutoRotationModal.js'; // 🆕 
+import { calculateAutoRotation } from './services/auto-rotation-service.js'; // 🆕
 
 // 🆕 加入 Google Sheets 服務
-import { 
-  fetchPlayerPointsFromGoogleSheets, 
-  updatePlayersPoints 
+import {
+  fetchPlayerPointsFromGoogleSheets,
+  updatePlayersPoints
 } from './services/google-sheets-service.js';
 
 const { useState, useEffect, useMemo } = React;
@@ -62,7 +65,9 @@ const App = () => {
   const [rotations, setRotations] = useState([]);
   const [selectingPosition, setSelectingPosition] = useState(null);
   const [editingPlayer, setEditingPlayer] = useState(null);
+  const [detailedPlayer, setDetailedPlayer] = useState(null); // 🆕 檢視模式
   const [editingSlot, setEditingSlot] = useState(null);
+  const [autoRotationConfig, setAutoRotationConfig] = useState(null); // 🆕 自動輪替設定
   const [isLoading, setIsLoading] = useState(true);
   const [cloudPlayers, setCloudPlayers] = useState(null);
   const [notification, setNotification] = useState('');
@@ -93,12 +98,12 @@ const App = () => {
       const pos = Object.keys(lineup).find(k => lineup[k] === e.playerId);
       return pos && (pitcherBats || pos !== 'P');
     });
-    
+
     const orderIds = new Set(currentOrder.map(e => e.playerId));
     const missing = onField
       .filter(([pos, pid]) => !orderIds.has(pid) && (pitcherBats || pos !== 'P'))
       .map(([pos, pid]) => ({ playerId: pid, position: pos }));
-    
+
     if (missing.length > 0) {
       setBattingOrder(prev => [...currentOrder, ...missing]);
     } else if (currentOrder.length !== battingOrder.length) {
@@ -107,8 +112,8 @@ const App = () => {
   }, [lineup, pitcherBats]);
 
   // ==================== 計算衍生資料 ====================
-  const availablePlayers = useMemo(() => 
-    players.filter(p => p.willAttend), 
+  const availablePlayers = useMemo(() =>
+    players.filter(p => p.willAttend),
     [players]
   );
 
@@ -124,13 +129,13 @@ const App = () => {
 
   const sortedPlayersForSelection = useMemo(() => {
     if (!selectingPosition) return [];
-    
+
     const onOtherPos = new Set(
       Object.entries(lineup)
         .filter(([pos, pid]) => pos !== selectingPosition && pid)
         .map(([pos, pid]) => pid)
     );
-    
+
     return [...availablePlayers]
       .filter(p => !onOtherPos.has(p.id))
       .sort((a, b) => {
@@ -140,11 +145,11 @@ const App = () => {
           if (selectingPosition.match(/^DH/) && p.secondaryPositions?.includes('DH')) return 1;
           return 2;
         };
-        
+
         const pA = getPriority(a), pB = getPriority(b);
         if (pA !== pB) return pA - pB;
         if (b.points !== a.points) return b.points - a.points;
-        
+
         const gradeValues = { S: 7, A: 6, B: 5, C: 4, D: 3, E: 2, F: 1 };
         const avgA = Object.values(a.grades).reduce((sum, g) => sum + gradeValues[g], 0) / 8;
         const avgB = Object.values(b.grades).reduce((sum, g) => sum + gradeValues[g], 0) / 8;
@@ -161,7 +166,7 @@ const App = () => {
   // ==================== 球員管理 ====================
   const handleUploadPlayers = async () => {
     if (!window.confirm('確定要上傳球員名單到雲端？\n⚠️ 這將覆蓋雲端資料')) return;
-    
+
     try {
       const success = await savePlayers(players, currentUser, cloudPlayers?.version || 0);
       if (success) {
@@ -184,7 +189,7 @@ const App = () => {
 
   const handleReloadPlayers = async () => {
     if (!window.confirm('確定要重新載入雲端球員名單？\n⚠️ 本地未上傳的修改將遺失')) return;
-    
+
     try {
       const cloudData = await loadPlayers();
       setCloudPlayers(cloudData);
@@ -208,20 +213,20 @@ const App = () => {
       willAttend: playerData.willAttend !== false,
       points: playerData.points ?? 0  // 🆕 修改：只有 undefined/null 才用 0
     };
-  
+
     if (playerData.id) {
       setPlayers(prev => prev.map(p => p.id === player.id ? player : p));
     } else {
       setPlayers(prev => [...prev, player]);
     }
-    
+
     setEditingPlayer(null);
     showNotification('✅ 球員已儲存');
   };
 
   const handleDeletePlayer = (id) => {
     if (!window.confirm('確定要刪除這位球員嗎？')) return;
-    
+
     setPlayers(prev => prev.filter(p => p.id !== id));
     setLineup(prev => {
       const next = { ...prev };
@@ -257,12 +262,12 @@ const App = () => {
   const handleImportExcel = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
+
     importFromExcel(file, (importedPlayers) => {
       setPlayers(prev => [...prev, ...importedPlayers]);
       showNotification(`✅ 已匯入 ${importedPlayers.length} 位球員`);
     });
-    
+
     e.target.value = '';
   };
 
@@ -324,18 +329,18 @@ const App = () => {
         newLineup = autoOptimizeBalanced(players, pitcherId, dhCount);
         break;
     }
-    
+
     setLineup(newLineup);
     showNotification(`✅ ${mode}完成`);
   };
 
   const handleAssignPlayer = (playerId) => {
     const newLineup = { ...lineup };
-    
+
     Object.keys(newLineup).forEach(k => {
       if (newLineup[k] === playerId) delete newLineup[k];
     });
-    
+
     newLineup[selectingPosition] = playerId;
     setLineup(newLineup);
     setSelectingPosition(null);
@@ -362,13 +367,13 @@ const App = () => {
       const displayPos = item.position.match(/^DH/) ? 'DH' : item.position;
       text += `${idx + 1}. ${p?.name || '?'} ${displayPos}\n`;
     });
-    
+
     const pitcher = Object.entries(lineup).find(([pos, pid]) => pos === 'P' && pid);
     if (pitcher && !pitcherBats) {
       const p = availablePlayers.find(x => x.id === pitcher[1]);
       text += `\nSP ${p?.name || '?'}`;
     }
-    
+
     try {
       navigator.clipboard.writeText(text);
       showNotification('✅ 已複製到剪貼簿');
@@ -392,38 +397,53 @@ const App = () => {
   };
 
   // ==================== 輪替管理 ====================
+  // 輔助函數：重新命名陣容
+  const reindexRotations = (rotArr) => {
+    return rotArr.map((rot, idx) => ({
+      ...rot,
+      name: idx === 0 ? '先發陣容' : `陣容${idx + 1}`
+    }));
+  };
+
   const handleAddRotation = () => {
     if (battingOrder.length === 0) {
       alert('請先設定打線');
       return;
     }
-    
+
     const newRot = {
       id: generateId(),
-      name: `第${rotations.length + 1}局`,
+      name: '', // 將由 reindexRotations 設定
       lineup: { ...lineup },
       battingOrder: [...battingOrder]
     };
-    
-    setRotations(prev => [...prev, newRot]);
+
+    setRotations(prev => reindexRotations([...prev, newRot]));
     showNotification('✅ 已新增陣容');
   };
 
   const handleDuplicateRotation = (rot) => {
     const newRot = {
       id: generateId(),
-      name: `${rot.name}(複製)`,
+      name: '', // 將由 reindexRotations 設定
       lineup: { ...rot.lineup },
       battingOrder: [...rot.battingOrder]
     };
-    
-    setRotations(prev => [...prev, newRot]);
+
+    setRotations(prev => {
+      const idx = prev.findIndex(r => r.id === rot.id);
+      if (idx === -1) return reindexRotations([...prev, newRot]);
+
+      const newRotations = [...prev];
+      newRotations.splice(idx + 1, 0, newRot);
+      return reindexRotations(newRotations);
+    });
     showNotification('✅ 已複製陣容');
   };
 
   const handleDeleteRotation = (id) => {
     if (!window.confirm('確定刪除此陣容？')) return;
-    setRotations(prev => prev.filter(r => r.id !== id));
+    setRotations(prev => reindexRotations(prev.filter(r => r.id !== id)));
     showNotification('✅ 已刪除陣容');
   };
 
@@ -434,34 +454,70 @@ const App = () => {
   const handleSwapPositions = (rotId, slotIdx, targetPlayerId) => {
     setRotations(prev => prev.map(rot => {
       if (rot.id !== rotId) return rot;
-      
+
+      // Case 1: Source is Pitcher (slotIdx is undefined/null)
+      if (slotIdx === undefined || slotIdx === null) {
+        const pitcherId = rot.lineup.P;
+        const targetIdx = rot.battingOrder.findIndex(item => item.playerId === targetPlayerId);
+
+        if (targetIdx !== -1) {
+          // Swap Pitcher <-> Fielder
+          const targetItem = rot.battingOrder[targetIdx];
+          const newOrder = [...rot.battingOrder];
+
+          // Target slot in batting order:
+          // Player becomes the original Pitcher (pitcherId)
+          // Position stays as the Fielder's position (targetItem.position)
+          newOrder[targetIdx] = {
+            ...targetItem,
+            playerId: pitcherId,
+            position: targetItem.position
+          };
+
+          const newLineup = { ...rot.lineup };
+          newLineup.P = targetItem.playerId; // Fielder -> P
+          newLineup[targetItem.position] = pitcherId; // Pitcher -> Fielder Position
+
+          return { ...rot, battingOrder: newOrder, lineup: newLineup };
+        }
+        return rot;
+      }
+
+      // Case 2: Source is Fielder (Standard Logic)
       const currentItem = rot.battingOrder[slotIdx];
       const targetIdx = rot.battingOrder.findIndex(item => item.playerId === targetPlayerId);
-      
+
+      // 2a. Target is NOT in Batting Order (i.e., Target is Pitcher)
       if (targetIdx === -1) {
         const newOrder = [...rot.battingOrder];
-        const pitcherPos = 'P';
-        newOrder[slotIdx] = { ...currentItem, position: pitcherPos };
-        
+        // Slot becomes the original Pitcher (targetPlayerId)
+        // Position stays as current Fielder's position
+        newOrder[slotIdx] = {
+          ...currentItem,
+          playerId: targetPlayerId,
+          position: currentItem.position
+        };
+
         const newLineup = { ...rot.lineup };
-        newLineup[pitcherPos] = currentItem.playerId;
-        newLineup[currentItem.position] = targetPlayerId;
-        
+        newLineup.P = currentItem.playerId; // Fielder -> P
+        newLineup[currentItem.position] = targetPlayerId; // Pitcher -> Fielder Position
+
         return { ...rot, battingOrder: newOrder, lineup: newLineup };
       }
-      
+
+      // 2b. Target IS in Batting Order (Fielder <-> Fielder)
       const newOrder = [...rot.battingOrder];
       const targetItem = newOrder[targetIdx];
       newOrder[slotIdx] = { ...currentItem, position: targetItem.position };
       newOrder[targetIdx] = { ...targetItem, position: currentItem.position };
-      
+
       const newLineup = { ...rot.lineup };
       newLineup[targetItem.position] = currentItem.playerId;
       newLineup[currentItem.position] = targetPlayerId;
-      
+
       return { ...rot, battingOrder: newOrder, lineup: newLineup };
     }));
-    
+
     setEditingSlot(null);
     showNotification('✅ 已換位置');
   };
@@ -469,57 +525,87 @@ const App = () => {
   const handleSubstitutePlayer = (rotId, slotIdx, newPlayerId) => {
     setRotations(prev => prev.map(rot => {
       if (rot.id !== rotId) return rot;
-      
+
       const currentItem = rot.battingOrder[slotIdx];
       const newOrder = [...rot.battingOrder];
       newOrder[slotIdx] = { ...currentItem, playerId: newPlayerId };
-      
+
       const newLineup = { ...rot.lineup };
       newLineup[currentItem.position] = newPlayerId;
-      
+
       return { ...rot, battingOrder: newOrder, lineup: newLineup };
     }));
-    
+
     setEditingSlot(null);
     showNotification('✅ 已換人');
   };
 
-   // 🆕 在 App 元件中加入處理函數
+  // 🆕 執行自動輪替
+  const handleAutoRotation = (config) => {
+    const { substituteCount, newPitcherId } = config;
+
+    // 取得最後一局作為參考
+    const lastRotation = rotations[rotations.length - 1];
+    if (!lastRotation) {
+      alert('請先建立至少一個陣容');
+      return;
+    }
+
+    const result = calculateAutoRotation(lastRotation, players, config);
+
+    if (result.error) {
+      alert(result.error);
+      return;
+    }
+
+    const newRot = {
+      id: generateId(),
+      name: '', // reindex 會處理
+      lineup: result.lineup,
+      battingOrder: result.battingOrder
+    };
+
+    setRotations(prev => reindexRotations([...prev, newRot]));
+    showNotification(`✅ 已自動產生輪替陣容 (替換 ${substituteCount} 人)`);
+    setAutoRotationConfig(null);
+  };
+
+  // 🆕 在 App 元件中加入處理函數
   const handleUpdatePoints = async () => {
     if (!window.confirm('確定要從 Google Sheets 更新球員積分？\n⚠️ 這將覆蓋現有積分資料')) return;
-    
+
     try {
       showNotification('📊 正在從 Google Sheets 載入積分...');
-      
+
       // 1. 從 Google Sheets 讀取積分
       const pointsMap = await fetchPlayerPointsFromGoogleSheets();
-      
+
       // 2. 更新球員積分
       const updatedPlayers = updatePlayersPoints(players, pointsMap);
-      
+
       // 3. 更新 state
       setPlayers(updatedPlayers);
-      
+
       // 4. 顯示成功訊息
       const updatedCount = Object.keys(pointsMap).length;
       showNotification(`✅ 已更新 ${updatedCount} 位球員積分`, 5000);
-      
+
     } catch (error) {
       console.error('更新積分失敗:', error);
       showNotification('❌ 更新失敗：' + error.message);
     }
   };
-  
+
   const handleSubstitutePitcher = (rotId, newPitcherId) => {
     setRotations(prev => prev.map(rot => {
       if (rot.id !== rotId) return rot;
-      
+
       const newLineup = { ...rot.lineup };
       newLineup.P = newPitcherId;
-      
+
       return { ...rot, lineup: newLineup };
     }));
-    
+
     setEditingSlot(null);
     showNotification('✅ 已換投手');
   };
@@ -559,70 +645,74 @@ const App = () => {
     // Notification
     React.createElement(Notification, { message: notification }),
 
-  // Main Content
-  React.createElement('main', { className: 'p-4 sm:p-6' },
-    activeTab === 'field' && React.createElement(FieldPage, {
-      lineup,
-      players,
-      bench,
-      onPositionClick: setSelectingPosition,
-      onAutoOptimize: handleAutoOptimize,
-      onUploadLineup: handleUploadLineup,
-      onLoadLineupHistory: handleLoadLineupHistory
-    }),
-  
-    activeTab === 'batting' && React.createElement(BattingPage, {
-      battingOrder,
-      players,
-      pitcherBats,
-      battingSubstitutes,
-      onPitcherBatsChange: setPitcherBats,
-      onMoveUp: handleMoveUp,
-      onMoveDown: handleMoveDown,
-      onCopyLineup: handleCopyLineup,
-      onAutoOptimizeBatting: handleAutoOptimizeBatting
-    }),
-  
-    activeTab === 'rotation' && React.createElement(RotationPage, {
-      rotations,
-      players,
-      pitcherBats,
-      onAddRotation: handleAddRotation,
-      onDuplicateRotation: handleDuplicateRotation,
-      onDeleteRotation: handleDeleteRotation,
-      onUpdateRotationName: handleUpdateRotationName,
-      onEditSlot: setEditingSlot
-    }),
-  
-    activeTab === 'roster' && React.createElement(RosterPage, {
-      players,
-      onAddPlayer: () => setEditingPlayer({
-        primaryPosition: 'P',
-        secondaryPositions: [],
-        grades: STAT_NAMES.reduce((obj, stat) => {
-          obj[stat] = 'C';
-          return obj;
-        }, {}),
-        willAttend: true,
-        points: 0
+    // Main Content
+    React.createElement('main', { className: 'p-4 sm:p-6' },
+      activeTab === 'field' && React.createElement(FieldPage, {
+        lineup,
+        players,
+        bench,
+        onPositionClick: setSelectingPosition,
+        onAutoOptimize: handleAutoOptimize,
+        onUploadLineup: handleUploadLineup,
+        onLoadLineupHistory: handleLoadLineupHistory,
+        onPlayerClick: setDetailedPlayer // 🆕 FieldPage 改為檢視模式
       }),
-      onEditPlayer: setEditingPlayer,
-      onDeletePlayer: handleDeletePlayer,
-      onUploadPlayers: handleUploadPlayers,
-      onExportExcel: handleExportExcel,
-      onImportExcel: handleImportExcel,
-      onToggleAllAttendance: handleToggleAllAttendance,
-      onDeleteAll: handleDeleteAll,
-      onUpdatePoints: handleUpdatePoints
-    }),
-  
-    // 🆕 新增這段
-    activeTab === 'card' && React.createElement(CardPage, {
-      players
-    })
-  ),
 
-                             
+      activeTab === 'batting' && React.createElement(BattingPage, {
+        battingOrder,
+        players,
+        pitcherBats,
+        battingSubstitutes,
+        onPitcherBatsChange: setPitcherBats,
+        onMoveUp: handleMoveUp,
+        onMoveDown: handleMoveDown,
+        onCopyLineup: handleCopyLineup,
+        onAutoOptimizeBatting: handleAutoOptimizeBatting,
+        onPlayerClick: setDetailedPlayer // 🆕 BattingPage 改為檢視模式
+      }),
+
+      activeTab === 'rotation' && React.createElement(RotationPage, {
+        rotations,
+        players,
+        pitcherBats,
+        onAddRotation: handleAddRotation,
+        onDuplicateRotation: handleDuplicateRotation,
+        onDeleteRotation: handleDeleteRotation,
+        onUpdateRotationName: handleUpdateRotationName,
+        onEditSlot: setEditingSlot,
+        onPlayerClick: setDetailedPlayer,
+        onAutoRotation: () => setAutoRotationConfig({}) // 🆕 開啟自動輪替 Modal
+      }),
+
+      activeTab === 'roster' && React.createElement(RosterPage, {
+        players,
+        onAddPlayer: () => setEditingPlayer({
+          primaryPosition: 'P',
+          secondaryPositions: [],
+          grades: STAT_NAMES.reduce((obj, stat) => {
+            obj[stat] = 'C';
+            return obj;
+          }, {}),
+          willAttend: true,
+          points: 0
+        }),
+        onEditPlayer: setEditingPlayer,
+        onDeletePlayer: handleDeletePlayer,
+        onUploadPlayers: handleUploadPlayers,
+        onExportExcel: handleExportExcel,
+        onImportExcel: handleImportExcel,
+        onToggleAllAttendance: handleToggleAllAttendance,
+        onDeleteAll: handleDeleteAll,
+        onUpdatePoints: handleUpdatePoints
+      }),
+
+      // 🆕 新增這段
+      activeTab === 'card' && React.createElement(CardPage, {
+        players
+      })
+    ),
+
+
 
     // Bottom Navigation
     React.createElement(Navigation, {
@@ -638,6 +728,16 @@ const App = () => {
       onSelect: handleAssignPlayer,
       onClear: handleClearPosition,
       onClose: () => setSelectingPosition(null)
+    }),
+
+    // 🆕 詳細資料卡片
+    React.createElement(PlayerDetailCard, {
+      player: detailedPlayer,
+      onClose: () => setDetailedPlayer(null),
+      onEdit: () => {
+        setEditingPlayer(detailedPlayer);
+        setDetailedPlayer(null);
+      }
     }),
 
     React.createElement(PlayerEditModal, {
@@ -659,6 +759,14 @@ const App = () => {
       onSubstitutePlayer: handleSubstitutePlayer,
       onSubstitutePitcher: handleSubstitutePitcher,
       onClose: () => setEditingSlot(null)
+    }),
+
+    // 🆕 自動輪替 Modal
+    autoRotationConfig && React.createElement(AutoRotationModal, {
+      players,
+      currentRotation: rotations[rotations.length - 1], // 傳入最後一局作為參考
+      onConfirm: handleAutoRotation,
+      onClose: () => setAutoRotationConfig(null)
     })
   );
 };

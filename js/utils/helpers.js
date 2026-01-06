@@ -6,9 +6,9 @@ export const getGradeColor = (grade) => {
   const colors = {
     S: 'from-purple-400 to-purple-600',
     A: 'from-yellow-300 to-yellow-500',
-    B: 'from-sky-300 to-blue-400',
-    C: 'from-orange-300 to-orange-500',
-    D: 'from-green-300 to-green-500',
+    B: 'from-slate-200 to-slate-400', // Silver updated
+    C: 'from-orange-700 to-amber-900', // Bronze updated
+    D: 'from-green-300 to-green-500', // D uses Green
     E: 'from-white to-slate-100',
     F: 'from-white to-slate-100'
   };
@@ -19,12 +19,17 @@ export const getCardRarity = (grades) => {
   const gradeValues = { S: 7, A: 6, B: 5, C: 4, D: 3, E: 2, F: 1 };
   const values = Object.values(grades).map(g => gradeValues[g] || 1);
   const avg = values.reduce((a, b) => a + b, 0) / values.length;
-  if (avg >= 6) return 'from-purple-400 to-purple-600';
-  if (avg >= 5) return 'from-yellow-300 to-amber-500';
-  if (avg >= 4) return 'from-sky-300 to-blue-400';
-  if (avg >= 3) return 'from-gray-300 to-slate-400';
-  if (avg >= 2) return 'from-white to-slate-100';
-  return 'from-white to-slate-100';
+
+  // 修正級距判定邏輯，讓更多人進入鑽石/金卡
+  // S=7, A=6, B=5, C=4, D=3, E=2, F=1
+  // A- (平均 5.375) 應為鑽石
+  // B+ (平均 5.125) 應為金卡
+
+  if (avg >= 5.25) return 'from-purple-400 to-purple-600'; // Diamond (S ~ A-)
+  if (avg >= 4.25) return 'from-yellow-300 to-amber-500'; // Gold (B+ ~ B-)
+  if (avg >= 3.25) return 'from-slate-200 to-slate-400'; // Silver (C+ ~ C-)
+  if (avg >= 2.0) return 'from-orange-700 to-amber-900'; // Bronze (D)
+  return 'from-white to-slate-100'; // Normal
 };
 
 export const formatDateTime = (date) => {

@@ -10,7 +10,9 @@ export const RotationPage = ({
   onDuplicateRotation,
   onDeleteRotation,
   onUpdateRotationName,
-  onEditSlot
+  onEditSlot,
+  onPlayerClick,
+  onAutoRotation // 🆕 接收 onAutoRotation
 }) => {
   const availablePlayers = players.filter(p => p.willAttend);
 
@@ -24,11 +26,18 @@ export const RotationPage = ({
       React.createElement('h2', {
         className: 'font-black italic text-cyan-400 uppercase tracking-widest text-sm'
       }, 'Rotation Management'),
-      
-      React.createElement('button', {
-        onClick: onAddRotation,
-        className: 'text-[10px] font-black bg-emerald-700/50 text-emerald-400 px-4 py-2 rounded-full border border-emerald-500/30 btn-primary shadow-lg'
-      }, '＋ 新增陣容')
+
+      React.createElement('div', { className: 'flex gap-2' },
+        React.createElement('button', {
+          onClick: onAutoRotation,
+          className: 'text-[10px] font-black bg-blue-700/50 text-blue-400 px-4 py-2 rounded-full border border-blue-500/30 btn-primary shadow-lg'
+        }, '⚡ 自動輪替'),
+
+        React.createElement('button', {
+          onClick: onAddRotation,
+          className: 'text-[10px] font-black bg-emerald-700/50 text-emerald-400 px-4 py-2 rounded-full border border-emerald-500/30 btn-primary shadow-lg'
+        }, '＋ 新增陣容')
+      )
     ),
 
     // Rotations List
@@ -49,13 +58,13 @@ export const RotationPage = ({
                 onChange: (e) => onUpdateRotationName(rot.id, e.target.value),
                 className: 'bg-transparent font-black text-[10px] text-cyan-400 outline-none border-b border-cyan-800 px-1 w-16'
               }),
-              
+
               React.createElement('div', { className: 'flex gap-0.5' },
                 React.createElement('button', {
                   onClick: () => onDuplicateRotation(rot),
                   className: 'text-[9px] p-0.5 bg-slate-800 rounded'
                 }, '📋'),
-                
+
                 React.createElement('button', {
                   onClick: () => onDeleteRotation(rot.id),
                   className: 'text-[9px] p-0.5 bg-red-900/50 rounded'
@@ -86,7 +95,9 @@ export const RotationPage = ({
                   className: `text-[10px] p-1 rounded flex items-center cursor-pointer hover:bg-slate-700/50 ${changed ? 'bg-yellow-600/50 border border-yellow-500/70' : 'bg-slate-800/50'}`
                 },
                   React.createElement('span', { className: 'font-bold text-slate-400 text-[9px] w-3' }, bidx + 1),
-                  React.createElement('span', { className: 'font-black flex-1 ml-1 truncate text-[10px]' }, 
+                  React.createElement('span', {
+                    className: 'font-black flex-1 ml-1 truncate text-[10px]'
+                  },
                     player?.name || '?'
                   ),
                   React.createElement('span', { className: 'text-[8px] font-bold text-slate-500' }, displayPos)
@@ -96,7 +107,7 @@ export const RotationPage = ({
               // Pitcher (if not batting)
               !pitcherBats && React.createElement(React.Fragment, null,
                 React.createElement('div', { className: 'border-t border-slate-700 my-1' }),
-                
+
                 Object.entries(rot.lineup)
                   .filter(([pos, pid]) => pos === 'P' && pid)
                   .map(([pos, pid]) => {
@@ -114,7 +125,9 @@ export const RotationPage = ({
                       }),
                       className: `text-[10px] p-1 rounded flex items-center cursor-pointer hover:bg-slate-700/50 ${changed ? 'bg-yellow-600/50 border border-yellow-500/70' : 'bg-slate-800/50'}`
                     },
-                      React.createElement('span', { className: 'font-black flex-1 truncate text-[10px]' }, 
+                      React.createElement('span', {
+                        className: 'font-black flex-1 truncate text-[10px]'
+                      },
                         player?.name || '?'
                       ),
                       React.createElement('span', { className: 'text-[8px] font-bold text-slate-500' }, pos)
@@ -126,12 +139,13 @@ export const RotationPage = ({
             // Bench
             React.createElement('div', { className: 'border-t border-slate-700 pt-1.5' },
               React.createElement('h4', { className: 'text-[7px] font-black text-slate-600 uppercase mb-1' }, 'Bench'),
-              
+
               React.createElement('div', { className: 'space-y-0.5' },
                 rotBench.slice(0, 3).map(p =>
                   React.createElement('div', {
                     key: p.id,
-                    className: 'text-[8px] p-0.5 bg-slate-950/50 rounded text-slate-400 truncate'
+                    className: 'text-[8px] p-0.5 bg-slate-950/50 rounded text-slate-400 truncate cursor-pointer hover:text-cyan-400', // 🆕 增加 cursor
+                    onClick: () => onPlayerClick(p) // 🆕 點擊顯示詳情
                   }, p.name)
                 ),
                 rotBench.length > 3 && React.createElement('div', {

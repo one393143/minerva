@@ -40,7 +40,7 @@ export const RotationEditModal = ({
       }, isPitcher ? '更換投手' : '調整球員'),
 
       // 換位置
-      !isPitcher && onFieldPlayers.length > 0 && React.createElement('div', { className: 'mb-6' },
+      onFieldPlayers.length > 0 && React.createElement('div', { className: 'mb-6' },
         React.createElement('h4', {
           className: 'text-xs font-black text-slate-500 uppercase mb-2'
         }, '換位置'),
