@@ -24,15 +24,16 @@ export const RotationEditModal = ({
     .filter(Boolean);
 
   // 取得板凳球員（用於換人）
-  const benchPlayers = availablePlayers.filter(p => 
+  const benchPlayers = availablePlayers.filter(p =>
     !Object.values(rotation.lineup).includes(p.id)
   );
 
   return React.createElement('div', {
-    className: 'fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop modal-enter'
+    /* 修正：統一改用 flex justify-center + my-auto */
+    className: 'fixed inset-0 z-50 flex justify-center p-4 modal-backdrop modal-enter overflow-y-auto'
   },
     React.createElement('div', {
-      className: 'bg-slate-900 w-full max-w-md rounded-3xl border-2 border-white/10 p-6 shadow-2xl overflow-y-auto max-h-[90vh]'
+      className: 'bg-slate-900 w-full max-w-md rounded-3xl border-2 border-white/10 p-6 shadow-2xl my-auto'
     },
       React.createElement('h3', {
         className: 'text-lg font-black mb-4 text-cyan-400'
@@ -66,7 +67,7 @@ export const RotationEditModal = ({
               key: p.id,
               player: p,
               compact: true,
-              onClick: () => isPitcher 
+              onClick: () => isPitcher
                 ? onSubstitutePitcher(rotId, p.id)
                 : onSubstitutePlayer(rotId, slotIdx, p.id)
             })

@@ -15,10 +15,11 @@ export const PositionSelectModal = ({
   if (!position) return null;
 
   return React.createElement('div', {
-    className: 'fixed inset-0 z-50 flex items-end sm:items-center justify-center modal-backdrop p-0 sm:p-4 modal-enter'
+    /* 修正：統一改用 flex justify-center + my-auto 避免上方被切掉 */
+    className: 'fixed inset-0 z-50 flex justify-center p-0 sm:p-4 modal-backdrop overflow-y-auto modal-enter'
   },
     React.createElement('div', {
-      className: 'bg-slate-900 w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] border-t-2 sm:border-2 border-white/10 p-8 shadow-2xl overflow-y-auto max-h-[85vh]'
+      className: 'bg-slate-900 w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] border-t-2 sm:border-2 border-white/10 p-8 shadow-2xl my-auto'
     },
       React.createElement('div', { className: 'flex justify-between items-center mb-8' },
         React.createElement('h3', {
@@ -27,7 +28,7 @@ export const PositionSelectModal = ({
           'Select ',
           React.createElement('span', { className: 'text-cyan-400' }, position)
         ),
-        
+
         React.createElement('button', {
           onClick: onClose,
           className: 'text-4xl font-black text-slate-600'

@@ -29,10 +29,14 @@ export const PlayerEditModal = ({ player, onSave, onClose }) => {
   };
 
   return React.createElement('div', {
-    className: 'fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop overflow-y-auto modal-enter'
+    /* 
+       修正：移除 items-center，改用 my-auto 來達成垂直置中且保留捲動功能 
+       這樣當內容比螢幕長時，上方不會被切掉
+    */
+    className: 'fixed inset-0 z-50 flex justify-center p-4 modal-backdrop overflow-y-auto modal-enter'
   },
     React.createElement('div', {
-      className: 'bg-slate-900 w-full max-w-md rounded-3xl border-2 border-white/10 p-6 shadow-2xl my-8 max-h-[90vh] overflow-y-auto'
+      className: 'bg-slate-900 w-full max-w-md rounded-3xl border-2 border-white/10 p-6 shadow-2xl my-auto'
     },
       React.createElement('h3', {
         className: 'text-xl font-black mb-6 text-center italic uppercase tracking-tighter text-cyan-400'
@@ -96,7 +100,7 @@ export const PlayerEditModal = ({ player, onSave, onClose }) => {
             }, '積分'),
             React.createElement('input', {
               type: 'number',
-              value: editData.points ?? 0 ,
+              value: editData.points ?? 0,
               onChange: (e) => setEditData({ ...editData, points: parseInt(e.target.value) || 0 }),
               className: 'w-full bg-slate-800 rounded-2xl px-4 py-2.5 font-black outline-none border border-white/5 shadow-inner'
             })
@@ -155,7 +159,7 @@ export const PlayerEditModal = ({ player, onSave, onClose }) => {
           onClick: onClose,
           className: 'flex-1 py-3 rounded-2xl bg-slate-800 text-slate-500 font-black text-xs uppercase tracking-widest active:bg-slate-700 transition-all'
         }, 'Cancel'),
-        
+
         React.createElement('button', {
           onClick: handleSave,
           className: 'flex-1 py-3 rounded-2xl bg-cyan-600 text-white font-black text-xs uppercase tracking-widest active:bg-cyan-700 transition-all shadow-lg'
