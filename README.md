@@ -1,446 +1,159 @@
 # 極限棒球陣容大師 Pro Manager
 
-⚾ 專業棒球隊陣容管理系統 - 完整模組化架構
-
-## 🎯 功能特色
-
-### 1. 使用者系統
-- **多使用者身份管理**（建德、智明、昌慈、俊廷、冠榮）
-- 個人化操作記錄與追蹤
-- 訪客模式支援
-- LocalStorage 持久化登入狀態
-
-### 2. 球員管理
-- **完整球員資料**
-  - 8 項能力等級評分（S~F）
-  - 主要/次要守備位置設定
-  - 出席狀態管理
-  - 積分系統（影響排陣優先度）
-- **批次操作**
-  - Excel 匯入/匯出
-  - 全員出席/不出席切換
-  - 批次刪除
-- **手機友善介面**
-  - 優化的編輯表單
-  - 響應式設計
-  - 滾動支援
-
-### 3. 陣容配置
-
-#### 守備配置 (Field)
-- 視覺化棒球場地圖
-- 拖拉式位置分配
-- 10 個守備位置 + 3 個 DH 位置
-- 即時板凳球員顯示
-
-#### 打線編排 (Lineup)
-- 自動生成打擊順序
-- 手動調整打序（上移/下移）
-- 投手打擊開關
-- 一鍵複製打序
-
-#### 輪替管理 (Rotation)
-- 多局次陣容規劃
-- 換人/換位置模擬
-- 投手輪替管理
-- 陣容複製與編輯
-
-### 4. 自動最佳化引擎
-
-#### 守備自動排陣
-選擇先發投手和 DH 數量後，系統自動排列：
-
-- **積分優先模式** 🎯
-  - 高積分球員優先上場
-  - 適合重要比賽
-
-- **守備最佳化** 🛡️
-  - 強化防守陣容
-  - 優先考慮守備等級
-
-- **打擊最大化** ⚔️
-  - 強化進攻火力
-  - 優先考慮打擊與力量
-
-- **平衡模式** ⚖️
-  - 綜合能力平衡
-  - 考慮所有能力平均值
-
-#### 打線自動最佳化
-- **1-2 棒**：速度 + 打擊（上壘率）
-- **3-5 棒**：力量 + 打擊（長打力）
-- **6-9 棒**：打擊能力排序
-
-### 5. 雲端同步 (Firebase Firestore)
-
-#### 球員名單同步
-- 手動上傳機制（防止衝突）
-- 版本控制系統
-- 強制覆蓋選項
-- 即時重新載入
-
-#### 陣容配置管理
-- 自訂陣容名稱（含預設範例）
-- 歷史記錄保留（最近 50 筆）
-- 一鍵載入歷史陣容
-- 自動清理舊記錄
-
-## 🏗️ 技術架構
-
-### 前端技術棧
-- **React 18** - UI 框架（CDN）
-- **Tailwind CSS** - 樣式框架
-- **ES Modules** - 模組化架構
-- **LocalStorage** - 本地資料持久化
-
-### 後端服務
-- **Firebase Firestore** - NoSQL 雲端資料庫
-- **Firebase SDK 10.7.1** - 官方 JavaScript SDK
-- **GitHub Pages** - 靜態網站託管
-
-### 專案結構
-
-```
-minerva/
-├── index.html                          # 使用者登入頁面
-├── app.html                            # 主應用框架
-├── css/
-│   └── styles.css                      # 全域樣式與動畫
-├── js/
-│   ├── config/
-│   │   └── firebase-config.js          # Firebase 配置
-│   ├── services/                       # 業務邏輯層
-│   │   ├── user-service.js             # 使用者管理
-│   │   ├── data-service.js             # 資料同步
-│   │   └── lineup-service.js           # 陣容演算法
-│   ├── utils/                          # 工具函數
-│   │   ├── constants.js                # 常數定義
-│   │   ├── helpers.js                  # 輔助函數
-│   │   └── excel-utils.js              # Excel 處理
-│   ├── components/                     # UI 元件
-│   │   ├── GradeBar.js                 # 能力條
-│   │   ├── PlayerCard.js               # 球員卡片
-│   │   ├── Header.js                   # 頁首
-│   │   ├── Navigation.js               # 底部導航
-│   │   └── Notification.js             # 通知訊息
-│   ├── pages/                          # 頁面元件
-│   │   ├── FieldPage.js                # 守備配置頁
-│   │   ├── BattingPage.js              # 打線編排頁
-│   │   ├── RotationPage.js             # 輪替管理頁
-│   │   └── RosterPage.js               # 球員名單頁
-│   ├── modals/                         # 彈窗元件
-│   │   ├── PositionSelectModal.js      # 位置選擇
-│   │   ├── PlayerEditModal.js          # 球員編輯
-│   │   ├── LineupHistoryModal.js       # 陣容歷史
-│   │   └── RotationEditModal.js        # 輪替編輯
-│   └── app.js                          # 主程式入口
-└── README.md                           # 專案說明文件
-```
-
-## 🚀 部署方式
-
-### 方法 1: GitHub Pages（推薦）
-
-1. **推送程式碼到 GitHub**
-```bash
-git add .
-git commit -m "Deploy baseball lineup manager"
-git push origin main
-```
-
-2. **啟用 GitHub Pages**
-   - 進入 Repository Settings
-   - Pages → Source → 選擇 `main` 分支
-   - 儲存後等待部署完成（約 1-2 分鐘）
-
-3. **訪問網站**
-   ```
-   https://[your-username].github.io/minerva/
-   ```
-
-### 方法 2: 本地開發
-
-#### 使用 Python HTTP Server
-```bash
-cd minerva
-python -m http.server 8000
-# 開啟 http://localhost:8000/index.html
-```
-
-#### 使用 Node.js serve
-```bash
-npx serve minerva
-# 開啟顯示的 URL
-```
-
-#### 使用 VS Code Live Server
-1. 安裝 Live Server 擴充功能
-2. 右鍵 `index.html`
-3. 選擇 "Open with Live Server"
-
-**⚠️ 重要提示：** 由於使用 ES Modules，**必須透過 HTTP Server 運行**，直接開啟 HTML 檔案會出現 CORS 錯誤。
-
-## 📊 資料結構
-
-### Firestore Collections
-
-#### `players/current` - 球員名單
-```javascript
-{
-  data: [
-    {
-      id: "uuid-string",              // 唯一識別碼
-      name: "王電類",                  // 球員姓名
-      number: "87",                    // 背號
-      primaryPosition: "SS",           // 主要守備位置
-      secondaryPositions: ["2B", "3B"], // 次要守備位置
-      grades: {
-        hitting: "A",      // 打擊
-        power: "S",        // 力量
-        discipline: "B",   // 選球
-        speed: "A",        // 速度
-        defense: "S",      // 守備
-        accuracy: "A",     // 傳球準度
-        armStrength: "B",  // 臂力
-        iq: "A"            // 球商
-      },
-      willAttend: true,    // 出席狀態
-      points: 87           // 積分
-    }
-    // ... more players
-  ],
-  lastUpdatedBy: "建德",              // 最後更新者
-  lastUpdatedAt: Timestamp,           // 最後更新時間
-  version: 5                          // 版本號（防衝突）
-}
-```
-
-#### `lineups/{lineupId}` - 陣容配置
-```javascript
-{
-  name: "1/4(日）冬盟G3 VS卡吐司",    // 陣容名稱
-  createdBy: "建德",                  // 建立者
-  createdAt: Timestamp,               // 建立時間
-  lineup: {
-    P: "player-id-1",
-    C: "player-id-2",
-    "1B": "player-id-3",
-    // ... 其他位置
-    DH1: "player-id-10",
-    DH2: "player-id-11",
-    DH3: "player-id-12"
-  },
-  battingOrder: [
-    { playerId: "player-id-2", position: "C" },
-    { playerId: "player-id-3", position: "1B" },
-    // ... 打擊順序
-  ],
-  rotations: [
-    {
-      id: "rotation-id-1",
-      name: "第1局",
-      lineup: { /* ... */ },
-      battingOrder: [ /* ... */ ]
-    }
-    // ... 更多輪替
-  ],
-  pitcherBats: false                  // 投手是否打擊
-}
-```
-
-## 🎨 等級系統
-
-### 能力等級與顏色
-
-| 等級 | 顏色 | 說明 | 代表意義 |
-|------|------|------|----------|
-| **S** | 🟣 紫色 | 頂級 | 職業水準 |
-| **A** | 🟡 金色 | 優秀 | 明星級 |
-| **B** | 🔵 銀藍色 | 良好 | 先發水準 |
-| **C** | 🟠 銅色 | 普通 | 平均水準 |
-| **D** | 🟢 綠色 | 及格 | 替補水準 |
-| **E** | ⚪ 白色 | 不足 | 需加強 |
-| **F** | ⚪ 白色 | 極差 | 明顯弱點 |
-
-### 球員卡稀有度（自動計算）
-
-根據 8 項能力平均值：
-- **平均 ≥ A** → 🟣 紫卡（傳奇）
-- **平均 ≥ B** → 🟡 金卡（明星）
-- **平均 ≥ C** → 🔵 銀卡（先發）
-- **平均 ≥ D** → ⚫ 灰卡（替補）
-- **平均 < D** → ⚪ 白卡（練習生）
-
-## 👥 團隊成員
-
-| 成員 | 圖示 | 角色 |
-|------|------|------|
-| **建德** | 👨‍💼 | 管理者 |
-| **智明** | 🧑‍🎓 | 分析師 |
-| **昌慈** | 👨‍💻 | 技術顧問 |
-| **俊廷** | 🧑‍🔬 | 數據科學家 |
-| **冠榮** | 👨‍🏫 | 教練 |
-
-## 🔧 開發指南
-
-### 新增功能模組
-
-#### 1. 建立新元件
-```javascript
-// js/components/NewComponent.js
-export const NewComponent = ({ prop1, prop2 }) => {
-  return React.createElement('div', {
-    className: 'your-classes'
-  }, 'Content');
-};
-```
-
-#### 2. 在 app.js 中匯入
-```javascript
-import { NewComponent } from './components/NewComponent.js';
-```
-
-#### 3. 在 Render 中使用
-```javascript
-React.createElement(NewComponent, {
-  prop1: value1,
-  prop2: value2
-})
-```
-
-### 修改樣式
-
-#### 全域樣式
-編輯 `css/styles.css`
-```css
-.your-custom-class {
-  /* CSS rules */
-}
-```
-
-#### 元件樣式
-使用 Tailwind CSS classes
-```javascript
-className: 'bg-slate-900 rounded-xl p-4'
-```
-
-### 新增 Firebase 功能
-
-#### 1. 在 data-service.js 新增函數
-```javascript
-export async function yourNewFunction() {
-  const docRef = doc(db, 'collection', 'document');
-  // ... Firebase operations
-}
-```
-
-#### 2. 在 app.js 中呼叫
-```javascript
-import { yourNewFunction } from './services/data-service.js';
-
-const handleYourAction = async () => {
-  await yourNewFunction();
-};
-```
-
-## 📱 瀏覽器支援
-
-| 瀏覽器 | 最低版本 | 狀態 |
-|--------|----------|------|
-| Chrome | 90+ | ✅ 完全支援 |
-| Firefox | 88+ | ✅ 完全支援 |
-| Safari | 14+ | ✅ 完全支援 |
-| Edge | 90+ | ✅ 完全支援 |
-| Mobile Safari | iOS 14+ | ✅ 完全支援 |
-| Chrome Mobile | Android 90+ | ✅ 完全支援 |
-
-## 🐛 故障排除
-
-### 問題 1: 點擊使用者沒反應
-**解決方案：**
-1. 按 F12 開啟開發者工具
-2. 檢查 Console 是否有錯誤
-3. 確認 `js/services/user-service.js` 存在
-4. 確認路徑正確
-
-### 問題 2: 跳轉後白畫面
-**解決方案：**
-1. 檢查 Console 錯誤訊息
-2. 確認所有模組檔案都已建立
-3. 確認 Firebase 配置正確
-4. 清除瀏覽器快取
-
-### 問題 3: Firebase 連線失敗
-**解決方案：**
-1. 檢查網路連線
-2. 確認 `js/config/firebase-config.js` 配置正確
-3. 檢查 Firestore 安全規則：
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true; // 開發環境
-    }
-  }
-}
-```
-
-### 問題 4: Excel 匯入失敗
-**解決方案：**
-1. 確認 Excel 格式正確
-2. 必須包含以下欄位：
-   - 姓名 (name)
-   - 背號 (number)
-   - 主要守備位置 (primaryPosition)
-3. 能力等級必須是 S/A/B/C/D/E/F
-
-### 問題 5: 自動排陣沒反應
-**解決方案：**
-1. 確認至少有一位投手（主要或次要位置為 P）
-2. 確認有足夠的出席球員
-3. 檢查 Console 是否有錯誤訊息
-
-## 📝 更新日誌
-
-### v2.1.0 (2026-01-05) - 最佳化更新
-- ✅ 優化球員編輯表單（手機友善）
-- ✅ 自動排陣前選擇投手與 DH 數量
-- ✅ 上傳陣容加入預設範例文字
-- ✅ 修正投手預設位置 undefined 問題
-- ✅ 投手不自動加入打擊順序（除非勾選）
-- ✅ 改善 Modal 使用體驗
-
-### v2.0.0 (2026-01-05) - 模組化重構
-- ✅ 完整模組化架構重構
-- ✅ 拆分 20+ 個獨立模組
-- ✅ 使用者系統整合
-- ✅ 雲端同步優化
-- ✅ 積分優先模式
-- ✅ 陣容歷史管理
-- ✅ 大幅改善可維護性與擴充性
-
-### v1.0.0 (2025-12-XX) - 初始版本
-- ✅ 基礎功能實作
-- ✅ 球員管理系統
-- ✅ 陣容配置功能
-- ✅ Firebase 整合
-
-## 📄 授權
-
-© 2026 極限棒球隊 - All Rights Reserved
-
-本專案僅供極限棒球隊內部使用，未經授權不得複製、修改或散佈。
+**專業級棒球隊伍管理系統 | 戰術排陣 | 自動輪替 | 數據分析**
 
 ---
 
-## 🔗 相關連結
+# 📘 上半部：使用者手冊 (User Manual)
 
-- **GitHub Repository**: [your-repo-url]
-- **Live Demo**: [your-github-pages-url]
-- **Firebase Console**: [your-firebase-console-url]
-- **技術支援**: 聯絡昌慈 👨‍💻
+## 🌟 最佳使用體驗流程 (Best Practice)
+
+為了讓您能最快速、順暢地完成一場比賽的排陣工作，建議依照以下標準流程操作：
+
+1.  **賽前準備 (Roster)**
+    *   進入 **「球員名單」** 頁面。
+    *   點擊 **「同步 Google Sheets 積分」** 確保所有球員積分為最新狀態。
+    *   確認當日 **「出席狀態」** (可使用全選/全取消功能快速調整)。
+    *   *Tip: 只有「出席」的球員才會出現在排陣候選名單中。*
+
+2.  **先發佈局 (Field)**
+    *   進入 **「守備配置」** 頁面。
+    *   點擊右上角 **「自動排陣」**。
+    *   設定先發投手 (SP) 與 指定打擊 (DH) 數量。
+    *   選擇 **「積分優先」** (建議) 模式，系統將根據球員積分與守備適性自動填入最佳先發名單。
+    *   手動微調特定位置 (點擊位置 -> 選擇球員)。
+
+3.  **火力最大化 (Batting)**
+    *   進入 **「打線編排」** 頁面。
+    *   點擊 **「自動棒次」**。
+    *   系統會依據 1-2 棒 (速度/上壘)、3-5 棒 (力量/長打)、6-9 棒 (打擊能力) 邏輯自動排序。
+    *   確認 **「投手打擊」** 開關狀態。
+
+4.  **局局輪替 (Rotation)**
+    *   進入 **「輪替管理」** 頁面。
+    *   點擊 **「新增下一局」** (複製上一局陣容)。
+    *   點擊 **「自動輪替」** 按鈕。
+    *   設定 **「替換人數」** (例如：3人) 與 **「新任投手」**。
+    *   系統會根據 **「公平性原則」** (優先讓坐板凳最久者上場、保護剛上場者) 自動計算換人方案。
+
+5.  **雲端存檔 (Save)**
+    *   所有設定完成後，點擊 Header 的 **「上傳雲端」**。
+    *   輸入陣容名稱 (如：1/6 冬盟 G3)，以利隊友查看或後續載入。
 
 ---
 
-**Powered by Firebase & React** | **Made with ⚾ by 極限棒球隊**
+## 🛠️ 功能介紹 (Features)
+
+### 1. 👥 球員名單 (Roster Page)
+*   **球員管理**：新增、編輯、刪除球員資料。
+*   **數據整合**：支援 Excel 匯入/匯出，以及 Google Sheets 積分同步。
+*   **多維度能力**：每位球員擁有 8 項能力值 (打擊、力量、速度、守備等) 及主要/次要守備位置。
+*   **狀態追蹤**：出席狀況開關、積分顯示。
+
+### 2. 🏟️ 守備配置 (Field Page)
+*   **視覺化球場**：直觀的棒球場地圖，清楚顯示各個守備位置。
+*   **智能選人**：點擊位置時，系統會自動排序「最佳候選人」(依據守備位置適性 > 積分 > 能力值)。
+*   **自動化引擎**：提供四種自動排陣模式，一鍵生成陣容。
+*   **板凳區**：即時顯示未上場球員清單。
+
+### 3. ⚾ 打線編排 (Batting Page)
+*   **打擊順序**：拖曳或點擊按鈕調整棒次 (上移/下移)。
+*   **靈活規則**：支援「投手打擊/不打擊」切換，DH (指定打擊) 自動納入打線。
+*   **快速複製**：一鍵複製文字版打序，方便貼到 Line 群組公告。
+
+### 4. 🔄 輪替管理 (Rotation Page)
+*   **多局規劃**：可建立無限局數的輪替計畫 (第 1 局、第 2 局...)。
+*   **公平演算法**：內建複雜的自動輪替建議，解決「誰該下場」、「誰該上場」的難題。
+*   **詳細資訊**：顯示每局的更動摘要 (In/Out 資訊) 與疲勞度警示。
+
+### 5. 📇 球員卡 (Card Page)
+*   **視覺化展示**：生成精美的球員能力卡片，包含等級 (S~F) 與雷達圖。
+*   **卡片分級**：根據綜合能力自動賦予卡片稀有度顏色 (紫卡、金卡、銀卡等)。
+
+---
+
+## ⚙️ 設定邏輯與演算法解密
+
+為了讓使用者理解系統「為什麼這樣排」，以下公開核心邏輯：
+
+### 1. 自動守備排陣 (Field Auto-Optimize)
+系統依據不同模式給予球員權重分數 (Weight)：
+*   **🎯 積分優先 (Points)**：最重視 `points` (平時貢獻/實力積分)。由高分者優先填入其主要位置，其次為次要位置。
+*   **🛡️ 守備最佳化 (Defense)**：權重側重 `defense`, `accuracy`, `armStrength`, `speed`。確保場上防守滴水不漏。
+*   **⚔️ 打擊最大化 (Offense)**：權重側重 `hitting`, `power`, `discipline`。無視守備漏洞，只求火力輸出。
+*   **⚖️ 平衡模式 (Balanced)**：所有能力值平均加權。
+
+### 2. 自動打線 (Batting Auto-Order)
+系統將打線分為三個區段進行最佳化：
+*   **前段棒次 (1-2棒)**：`Speed` (速度) + `Hitting` (打擊) 權重最高。目標是高上壘率與戰術執行力。
+*   **中心棒次 (3-5棒)**：`Power` (力量) + `Hitting` (打擊) 權重最高。目標是清壘與長打能力。
+*   **後段棒次 (6-9棒)**：依據剩餘球員的綜合打擊能力排序。
+
+### 3. 自動輪替公平性 (Auto-Rotation Fairness)
+這是本系統最核心且複雜的演算法，旨在達成「人人有球打」且「戰力不崩盤」：
+*   **優先上場 (Priority In)**：目前在板凳區，且連續坐板凳局數 (Bench Streak) 最久的球員優先上場。
+*   **優先下場 (Priority Out)**：
+    *   場上連續出賽 (Fielding Streak) 最久的球員優先考慮下場。
+    *   **保護機制**：剛上場不到 1 局的球員會有「保護期」，系統會極力避免將其換下。
+*   **位置適性**：換人時，系統會嘗試尋找「最佳替補解」，意即 A 下場換 B 上場時，B 必須能守 A 的位置，或是透過 C 移防來達成連鎖調度。
+
+---
+
+# 💻 下半部：程式手冊 (Developer Manual)
+
+## 🏗️ 系統架構 (Architecture)
+
+本專案採用 **"Buildless" Modern Web Architecture**。
+不使用 Webpack/Vite 等打包工具，直接利用瀏覽器原生的 **ES Modules (ESM)** 進行開發與運行。
+
+### 技術堆疊
+*   **核心框架**: React 18 (透過 CDN 引入 UMD/ESM)。
+*   **UI 樣式**: Tailwind CSS (透過 CDN Runtime 或預編譯 CSS)。
+*   **資料庫**: Firebase Firestore (NoSQL Cloud DB)。
+*   **語言**: Vanilla JavaScript (ES6+)。
+*   **架構模式**: Modular Monolith (模組化單體)。
+
+### 目錄結構
+```
+js/
+├── app.js                # [Controller] 應用程式入口，狀態管理 (State Management) 與 路由 (Ranking)。
+├── pages/                # [Views] 各個主要頁面 (Field, Batting, Rotation...)，負責 UI 呈現。
+├── services/             # [Model/Logic] 業務邏輯層。
+│   ├── data-service.js   # Firebase CRUD 操作。
+│   ├── lineup-service.js # 排陣與打線演算法。
+│   ├── auto-rotation-service.js # 複雜的輪替公平性演算法。
+│   └── google-sheets-service.js # 外部 API 整合。
+├── components/           # [Components] 重用 UI 元件 (Card, Header, Modal)。
+└── utils/                # [Utils] 工具函式。
+```
+
+## 🔗 模組串接原理
+
+1.  **Entry Point (`index.html` & `app.js`)**:
+    *   `index.html` 載入 React, Firebase SDK 與 `app.js`。
+    *   `app.js` 使用 `ReactDOM.createRoot` 渲染，並透過 `useState` 管理全域狀態 (`players`, `lineup`, `rotations`)。
+
+2.  **State Down, Action Up**:
+    *   `App.js` 將狀態 (State) 作為 Props 向下傳遞給 `pages/`。
+    *   `pages/` 觸發使用者行為時，呼叫 `App.js` 傳遞下來的 Callback (如 `handleSavePlayer`)。
+
+3.  **Service Integration**:
+    *   `App.js` 不包含複雜運算邏輯，而是呼叫 `services/` 中的純函式 (Pure Functions)。
+    *   例如：按下「自動輪替」 -> `App.js` 呼叫 `auto-rotation-service.calculateAutoRotation(...)` -> 接收回傳結果 -> `setState` 更新畫面。
+
+## ⚠️ 可能的漏洞與不足之處 (Limitations & Vulnerabilities)
+
+### 1. 安全性 (Security)
+*   **Firebase Rules**: 目前開發階段可能配置為 `allow read, write: if true;`。在正式上線前必須設定 Firestore Security Rules，限制只有授權的 User UID 可以寫入資料，否則任何人皆可竄改球員數據。
+*   **API Keys**: Google Sheets API Key 若直接寫在前端程式碼中暴露，有配額被盜用的風險。建議透過 Firebase Functions (Backend Proxy) 呼叫。
+
+### 2. 資料一致性 (Data Consistency)
+*   **Race Conditions**: 由於沒有後端鎖 (Lock) 機制，若兩位管理員同時編輯「同一份陣容」並上傳，系統採用 **Last Write Wins** (最後上傳者覆蓋) 策略，可能導致前一人的修改遺失。
+*   **Offline Mode**: 目前尚未完整實作 PWA 離線支援，網路斷線時無法進行排陣儲存。
+
+### 3. 表演效能 (Performance)
+*   **React Render**: 因為沒有使用編譯器 (JSX -> JS)，而是直接使用 `React.createElement`，雖然在現代瀏覽器效能尚可，但若球員數據量極大 (>500人)，可能會感受到 UI 渲染延遲。
+*   **Global Layout Reflow**: 每次輪替計算涉及大量的排列組合搜尋 (Backtracking/Greedy Search)，在手機端運算時可能會造成短暫的 UI 卡頓 (Blocking Main Thread)。
+
+### 4. 瀏覽器相容性
+*   由於使用原生 ES Modules (`import ... from ...`)，不支援 IE 或過於老舊的瀏覽器。必須在支援 ES6+ 的環境下執行。
