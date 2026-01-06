@@ -20,6 +20,25 @@ const POS_WEIGHTS = {
 };
 
 /**
+ * 取得特定角色的守備加成倍率 (Role Mastery)
+ * CF -> 外野統帥 (CF: 1.2x, LF/RF: 1.1x)
+ * SS -> 內野核心 (SS: 1.2x, 2B/3B: 1.1x)
+ */
+function getRoleMasteryMultiplier(player, position) {
+  if (player.primaryPosition === 'CF') {
+    if (position === 'CF') return 1.2;
+    if (['LF', 'RF'].includes(position)) return 1.1;
+  }
+
+  if (player.primaryPosition === 'SS') {
+    if (position === 'SS') return 1.2;
+    if (['2B', '3B'].includes(position)) return 1.1;
+  }
+
+  return 1.0;
+}
+
+/**
  * 計算球員的守備能力分數
  */
 function getDefenseScore(player) {
@@ -36,9 +55,10 @@ function getDefenseScore(player) {
  */
 function getOffenseScore(player) {
   return (
-    GRADE_VALUES[player.grades.hitting] * 3 +
-    GRADE_VALUES[player.grades.power] * 3 +
-    GRADE_VALUES[player.grades.discipline] * 2
+    GRADE_VALUES[player.grades.hitting] * 3.0 +
+    GRADE_VALUES[player.grades.discipline] * 2.5 +
+    GRADE_VALUES[player.grades.power] * 2.0 +
+    GRADE_VALUES[player.grades.speed] * 1.0
   );
 }
 
@@ -93,7 +113,17 @@ function calculateVersatilityScore(player, position) {
     return 70; // 其他扣分
   }
 
-  // 4. 非擅長位置 -> 嚴格禁止
+  // 4. 外野統帥 (Primary CF -> OF)
+  if (player.primaryPosition === 'CF' && ['LF', 'RF'].includes(position)) {
+    return 80; // 隱藏適性
+  }
+
+  // 5. 內野核心 (Primary SS -> 2B, 3B)
+  if (player.primaryPosition === 'SS' && ['2B', '3B'].includes(position)) {
+    return 80; // 隱藏適性
+  }
+
+  // 6. 非擅長位置 -> 嚴格禁止
   // 使用者要求：不可以把球員丟去沒有次要位置的地方
   return 0;
 }
@@ -299,10 +329,11 @@ export function autoOptimizeDefense(players, pitcherId, dhCount = 1) {
     if (fitScore === 0) return 0;
     const defenseScore = getDefenseScore(player);
     const weight = POS_WEIGHTS[position] || 1;
+    const mastery = getRoleMasteryMultiplier(player, position); // 🆕 加上角色專精加成
 
-    // 守備能力 * 100 * 權重 + 位置適性
+    // 守備能力 * 100 * 權重 * 專精 + 位置適性
     // 這樣可以確保「守備好的球員」優先被分配到「重要位置」
-    return defenseScore * 100 * weight + fitScore;
+    return defenseScore * 100 * weight * mastery + fitScore;
   };
 
   // 排除投手參與競爭
@@ -452,21 +483,44 @@ export function autoOptimizeBalanced(players, pitcherId, dhCount = 1) {
     return { P: pitcherId };
   }
 
-  // 移除 P
+
+
+  // 2. 移除 'P'
   const positions = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'FE'];
   for (let i = 1; i <= dhCount; i++) {
     positions.push(`DH${i}`);
   }
 
   const scoringFunction = (player, position) => {
-    const fitScore = getPositionFitScore(player, position);
-    if (fitScore === 0) return 0;
+    // 1. 位置適性 (0~100) -> 放大到 0~1000 以確保是基礎
+    const fitScore = calculateVersatilityScore(player, position);
+    if (fitScore === 0) return 0; // 嚴格禁止不合格位置
 
-    const allStats = Object.values(player.grades)
-      .reduce((sum, grade) => sum + GRADE_VALUES[grade], 0);
-    const avgScore = allStats / 8;
+    // 2. 打擊分數 (權重 1.5)
+    // 讓強打者在外野角落/一壘更有優勢
+    const offenseScore = getOffenseScore(player);
 
-    return fitScore * 1 + avgScore * 50 + player.points * 0.5;
+    // 3. 守備分數 (權重浮動 1.0 ~ 2.0)
+    // 讓守備組在 SS/CF/C 更有優勢
+    const defenseScore = getDefenseScore(player);
+    const posWeight = POS_WEIGHTS[position] || 1; // DH = 1
+    const mastery = getRoleMasteryMultiplier(player, position);
+
+    // 4. 定義分數
+    if (position.startsWith('DH')) {
+      // DH 只看打擊
+      return offenseScore * 100 + fitScore * 10;
+    }
+
+    // 一般守備位置
+    // 守備分 * 100 * (位置權重)
+    // 打擊分 * 150 (固定權重 1.5)
+    return (
+      (defenseScore * 100 * posWeight * mastery) +
+      (offenseScore * 150) +
+      (fitScore * 10) +
+      (player.points * 0.1) // 些微積分影響
+    );
   };
 
   // 排除投手
