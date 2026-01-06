@@ -680,8 +680,15 @@ const App = () => {
         onDeleteRotation: handleDeleteRotation,
         onUpdateRotationName: handleUpdateRotationName,
         onEditSlot: setEditingSlot,
+        onEditSlot: setEditingSlot,
         onPlayerClick: setDetailedPlayer,
-        onAutoRotation: () => setAutoRotationConfig({}) // 🆕 開啟自動輪替 Modal
+        onAutoRotation: () => {
+          if (rotations.length === 0) {
+            alert('請先建立至少一個陣容');
+            return;
+          }
+          setAutoRotationConfig({});
+        }
       }),
 
       activeTab === 'roster' && React.createElement(RosterPage, {
