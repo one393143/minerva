@@ -562,7 +562,10 @@ const App = () => {
       id: generateId(),
       name: '', // reindex 會處理
       lineup: result.lineup,
-      battingOrder: result.battingOrder
+      battingOrder: result.battingOrder,
+      substitutionCounts: result.substitutionCounts, // 🆕 儲存換人計數
+      tiredPlayers: result.tiredPlayers, // 🆕 儲存疲勞名單 (場上/10)
+      fieldingTenure: result.fieldingTenure // 🆕 儲存守備局數 (用於判定資深程度)
     };
 
     setRotations(prev => reindexRotations([...prev, newRot]));

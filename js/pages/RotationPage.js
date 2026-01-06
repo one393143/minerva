@@ -136,22 +136,64 @@ export const RotationPage = ({
               )
             ),
 
-            // Bench
-            React.createElement('div', { className: 'border-t border-slate-700 pt-1.5' },
-              React.createElement('h4', { className: 'text-[7px] font-black text-slate-600 uppercase mb-1' }, 'Bench'),
+            // Bench Sections
+            React.createElement('div', { className: 'mt-1.5 space-y-1' },
 
-              React.createElement('div', { className: 'space-y-0.5' },
-                rotBench.slice(0, 3).map(p =>
-                  React.createElement('div', {
-                    key: p.id,
-                    className: 'text-[8px] p-0.5 bg-slate-950/50 rounded text-slate-400 truncate cursor-pointer hover:text-cyan-400', // 🆕 增加 cursor
-                    onClick: () => onPlayerClick(p) // 🆕 點擊顯示詳情
-                  }, p.name)
-                ),
-                rotBench.length > 3 && React.createElement('div', {
-                  className: 'text-[7px] text-slate-600'
-                }, `+${rotBench.length - 3}`)
-              )
+              // 1. Normal Bench
+              (() => {
+                const normalBench = rotBench.filter(p => !rot.substitutionCounts?.[p.id]);
+                if (normalBench.length === 0) return null;
+                return React.createElement('div', { className: 'border-t border-slate-700 pt-1' },
+                  React.createElement('h4', { className: 'text-[7px] font-black text-slate-600 uppercase mb-0.5' }, 'Bench'),
+                  React.createElement('div', { className: 'space-y-0.5 max-h-12 overflow-y-auto' },
+                    normalBench.map(p =>
+                      React.createElement('div', {
+                        key: p.id,
+                        className: 'text-[8px] p-0.5 bg-slate-950/50 rounded text-slate-400 truncate cursor-pointer hover:text-cyan-400',
+                        onClick: () => onPlayerClick(p)
+                      }, p.name)
+                    )
+                  )
+                );
+              })(),
+
+              // 2. Substituted Once (Yellow/Orange)
+              (() => {
+                const subOnce = rotBench.filter(p => rot.substitutionCounts?.[p.id] === 1);
+                if (subOnce.length === 0) return null;
+                return React.createElement('div', { className: 'border-t border-slate-700 pt-1' },
+                  React.createElement('h4', { className: 'text-[7px] font-black text-amber-600/70 uppercase mb-0.5' }, 'Subbed (1/2)'),
+                  React.createElement('div', { className: 'space-y-0.5 max-h-12 overflow-y-auto' },
+                    subOnce.map(p =>
+                      React.createElement('div', {
+                        key: p.id,
+                        className: 'text-[8px] p-0.5 bg-amber-950/30 rounded text-amber-500 truncate cursor-pointer hover:text-amber-300 flex justify-between',
+                        onClick: () => onPlayerClick(p)
+                      },
+                        React.createElement('span', {}, p.name),
+                        React.createElement('span', { className: 'text-[6px] opacity-70' }, `${Math.floor(p.points / 10)} pts`)
+                      )
+                    )
+                  )
+                );
+              })(),
+
+              // 3. Out (Grayed out)
+              (() => {
+                const outPlayers = rotBench.filter(p => (rot.substitutionCounts?.[p.id] || 0) >= 2);
+                if (outPlayers.length === 0) return null;
+                return React.createElement('div', { className: 'border-t border-slate-700 pt-1' },
+                  React.createElement('h4', { className: 'text-[7px] font-black text-slate-700 uppercase mb-0.5' }, 'Out (2/2)'),
+                  React.createElement('div', { className: 'space-y-0.5 max-h-12 overflow-y-auto' },
+                    outPlayers.map(p =>
+                      React.createElement('div', {
+                        key: p.id,
+                        className: 'text-[8px] p-0.5 text-slate-700 truncate cursor-not-allowed select-none'
+                      }, p.name)
+                    )
+                  )
+                );
+              })()
             )
           );
         })
