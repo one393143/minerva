@@ -79,7 +79,7 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
   const gradeColor = getGradeColor(letterGrade);
 
   const cardBgImage = `photo/card/${tier}.jpg`;
-  const playerImage = `photo/player/${player.name}.png`;
+  const playerImage = `photo/player/${player.name}.webp`;
 
   // 共用的 stats 順序
   const statsList = [
@@ -110,7 +110,9 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
       React.createElement('img', {
         src: cardBgImage,
         alt: tier,
-        className: 'absolute inset-0 w-full h-full object-cover'
+        className: 'absolute inset-0 w-full h-full object-cover',
+        loading: 'lazy',   // 🚀 延遲載入
+        decoding: 'async'  // 🚀 非同步解碼
       }),
 
       // 守備位置
@@ -148,7 +150,9 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
           alt: player.name,
           className: 'w-full h-full object-contain object-bottom',
           style: { filter: 'drop-shadow(0 1cqw 1.5cqw rgba(0, 0, 0, 0.5))' },
-          onError: (e) => { e.target.style.display = 'none'; }
+          onError: (e) => { e.target.style.display = 'none'; },
+          loading: 'lazy',   // 🚀 延遲載入
+          decoding: 'async'  // 🚀 非同步解碼
         })
       ),
 
@@ -228,7 +232,9 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
     React.createElement('img', {
       src: cardBgImage,
       alt: tier,
-      className: 'absolute inset-0 w-full h-full object-cover'
+      className: 'absolute inset-0 w-full h-full object-cover',
+      loading: 'lazy',   // 🚀 延遲載入
+      decoding: 'async'  // 🚀 非同步解碼
     }),
 
     // 守備位置
@@ -266,7 +272,9 @@ export const PlayerCardDisplay = ({ player, compact = false }) => {
         alt: player.name,
         className: 'w-full h-full object-contain object-bottom',
         style: { filter: 'drop-shadow(0 1cqw 1.5cqw rgba(0, 0, 0, 0.5))' },
-        onError: (e) => { e.target.style.display = 'none'; }
+        onError: (e) => { e.target.style.display = 'none'; },
+        loading: 'lazy',   // 🚀 延遲載入
+        decoding: 'async'  // 🚀 非同步解碼
       })
     ),
 
