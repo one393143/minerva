@@ -27,14 +27,14 @@ export const Header = ({ currentUser, cloudPlayers, onLogout, onReload }) => {
       )
     ),
     cloudPlayers &&
-      React.createElement('div', { className: 'mt-2 text-xs text-slate-500 flex items-center gap-2' },
-        React.createElement('span', null, 
-          `最後更新：${cloudPlayers.lastUpdatedBy} (${formatDateTime(cloudPlayers.lastUpdatedAt)})`
-        ),
-        React.createElement('button', {
-          onClick: onReload,
-          className: 'text-cyan-400 hover:text-cyan-300 font-bold'
-        }, '🔄 重新載入')
-      )
+    React.createElement('div', { className: 'mt-2 text-xs text-slate-500 flex items-center gap-2' },
+      React.createElement('span', null,
+        `最後更新：${cloudPlayers.lastUpdatedBy} (${formatDateTime(cloudPlayers.lastUpdatedAt)})`
+      ),
+      React.createElement('button', {
+        onClick: onReload,
+        className: 'text-cyan-400 hover:text-cyan-300 font-bold'
+      }, '🔄 重新載入')
+    )
   );
 };

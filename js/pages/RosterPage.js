@@ -4,17 +4,18 @@
 
 import { PlayerCard } from '../components/PlayerCard.js';
 
-export const RosterPage = ({ 
-  players, 
-  onAddPlayer, 
-  onEditPlayer, 
+export const RosterPage = ({
+  players,
+  onAddPlayer,
+  onEditPlayer,
   onDeletePlayer,
   onUploadPlayers,
   onExportExcel,
   onImportExcel,
   onToggleAllAttendance,
   onDeleteAll,
-  onUpdatePoints
+  onUpdatePoints,
+  onToggleAttendance
 }) => {
   return React.createElement('div', { className: 'animate-slide-up space-y-6' },
     // Header
@@ -89,7 +90,9 @@ export const RosterPage = ({
           key: player.id,
           player: player,
           onClick: () => onEditPlayer(player),
-          onDelete: onDeletePlayer,  // ✅ 傳遞刪除函數
+          onDelete: onDeletePlayer,
+          onToggleAttendance: onToggleAttendance,
+          showAttendanceToggle: true,
           showGrades: true,
           showSecondary: true
         })

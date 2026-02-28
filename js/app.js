@@ -45,6 +45,8 @@ import {
   updatePlayersPoints
 } from './services/google-sheets-service.js';
 
+import { ExportImageModal } from './modals/ExportImageModal.js'; // 🆕
+
 const { useState, useEffect, useMemo } = React;
 
 // ==================== 主應用元件 ====================
@@ -73,6 +75,7 @@ const App = () => {
   const [notification, setNotification] = useState('');
   const [showLineupModal, setShowLineupModal] = useState(false);
   const [lineupHistory, setLineupHistory] = useState([]);
+  const [showExportModal, setShowExportModal] = useState(false); // 🆕
 
   // ==================== 初始化 ====================
   useEffect(() => {
@@ -251,6 +254,12 @@ const App = () => {
   const handleToggleAllAttendance = (attend) => {
     setPlayers(prev => prev.map(p => ({ ...p, willAttend: attend })));
     showNotification(attend ? '✅ 全部設為出席' : '❌ 全部設為不出席');
+  };
+
+  const handleToggleAttendance = (playerId) => {
+    setPlayers(prev => prev.map(p =>
+      p.id === playerId ? { ...p, willAttend: !p.willAttend } : p
+    ));
   };
 
   // ==================== Excel 處理 ====================
@@ -658,6 +667,7 @@ const App = () => {
         onAutoOptimize: handleAutoOptimize,
         onUploadLineup: handleUploadLineup,
         onLoadLineupHistory: handleLoadLineupHistory,
+        onExportImage: () => setShowExportModal(true), // 🆕
         onPlayerClick: setDetailedPlayer // 🆕 FieldPage 改為檢視模式
       }),
 
@@ -713,7 +723,8 @@ const App = () => {
         onImportExcel: handleImportExcel,
         onToggleAllAttendance: handleToggleAllAttendance,
         onDeleteAll: handleDeleteAll,
-        onUpdatePoints: handleUpdatePoints
+        onUpdatePoints: handleUpdatePoints,
+        onToggleAttendance: handleToggleAttendance
       }),
 
       // 🆕 新增這段
@@ -777,6 +788,14 @@ const App = () => {
       currentRotation: rotations[rotations.length - 1], // 傳入最後一局作為參考
       onConfirm: handleAutoRotation,
       onClose: () => setAutoRotationConfig(null)
+    }),
+
+    // 🆕 匯出圖片 Modal
+    showExportModal && React.createElement(ExportImageModal, {
+      lineup,
+      players,
+      bench,
+      onClose: () => setShowExportModal(false)
     })
   );
 };

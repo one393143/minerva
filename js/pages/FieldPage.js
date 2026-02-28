@@ -15,6 +15,7 @@ export const FieldPage = ({
   onAutoOptimize,
   onUploadLineup,
   onLoadLineupHistory,
+  onExportImage, // 🆕
   onPlayerClick // 🆕 接收 onPlayerClick
 }) => {
   const [showOptimizeModal, setShowOptimizeModal] = React.useState(null);
@@ -147,6 +148,11 @@ export const FieldPage = ({
             }, mode)
           )
         ),
+
+        React.createElement('button', {
+          onClick: onExportImage,
+          className: 'text-[10px] font-black bg-cyan-700/50 text-cyan-400 px-4 py-2 rounded-full border border-cyan-500/30 btn-primary shadow-lg'
+        }, '📸 分流/產生圖片'),
 
         React.createElement('div', { className: 'flex gap-2' },
           React.createElement('button', {
