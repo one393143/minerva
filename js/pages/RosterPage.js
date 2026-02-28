@@ -15,7 +15,8 @@ export const RosterPage = ({
   onToggleAllAttendance,
   onDeleteAll,
   onUpdatePoints,
-  onToggleAttendance
+  onToggleAttendance,
+  onOpenAttendanceChecklist
 }) => {
   return React.createElement('div', { className: 'animate-slide-up space-y-6' },
     // Header
@@ -79,7 +80,13 @@ export const RosterPage = ({
         React.createElement('button', {
           onClick: onDeleteAll,
           className: 'text-xs font-black bg-slate-700/50 text-slate-400 px-4 py-2 rounded-full border border-slate-500/30 btn-primary shadow-lg'
-        }, '🗑️ 刪除全部')
+        }, '🗑️ 刪除全部'),
+
+        // 快速勾選出席
+        React.createElement('button', {
+          onClick: onOpenAttendanceChecklist,
+          className: 'col-span-2 text-xs font-black bg-cyan-600 text-white px-4 py-3 rounded-full border border-cyan-400 shadow-xl shadow-cyan-900/40 mt-2 btn-primary'
+        }, '📋 快速勾選出席')
       )
     ),
 

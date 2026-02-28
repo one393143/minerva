@@ -46,6 +46,7 @@ import {
 } from './services/google-sheets-service.js';
 
 import { ExportImageModal } from './modals/ExportImageModal.js'; // 🆕
+import { AttendanceChecklistModal } from './modals/AttendanceChecklistModal.js'; // 🆕
 
 const { useState, useEffect, useMemo } = React;
 
@@ -74,8 +75,8 @@ const App = () => {
   const [cloudPlayers, setCloudPlayers] = useState(null);
   const [notification, setNotification] = useState('');
   const [showLineupModal, setShowLineupModal] = useState(false);
-  const [lineupHistory, setLineupHistory] = useState([]);
   const [showExportModal, setShowExportModal] = useState(false); // 🆕
+  const [showAttendanceModal, setShowAttendanceModal] = useState(false); // 🆕
 
   // ==================== 初始化 ====================
   useEffect(() => {
@@ -724,7 +725,8 @@ const App = () => {
         onToggleAllAttendance: handleToggleAllAttendance,
         onDeleteAll: handleDeleteAll,
         onUpdatePoints: handleUpdatePoints,
-        onToggleAttendance: handleToggleAttendance
+        onToggleAttendance: handleToggleAttendance,
+        onOpenAttendanceChecklist: () => setShowAttendanceModal(true)
       }),
 
       // 🆕 新增這段
@@ -788,6 +790,15 @@ const App = () => {
       currentRotation: rotations[rotations.length - 1], // 傳入最後一局作為參考
       onConfirm: handleAutoRotation,
       onClose: () => setAutoRotationConfig(null)
+    }),
+
+    // 🏆 快速出席勾選 Modal
+    showAttendanceModal &&
+    React.createElement(AttendanceChecklistModal, {
+      players: players,
+      onToggleAttendance: handleToggleAttendance,
+      onToggleAll: handleToggleAllAttendance,
+      onClose: () => setShowAttendanceModal(false)
     }),
 
     // 🆕 匯出圖片 Modal
