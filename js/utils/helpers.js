@@ -46,3 +46,22 @@ export const formatDateTime = (date) => {
 export const generateId = () => {
   return Date.now().toString() + Math.random().toString(36).substr(2, 9);
 };
+
+export const calculateAverageGrade = (player) => {
+  if (!player || !player.grades) return 0;
+  
+  const GRADE_VALUES = { S: 7, A: 6, B: 5, C: 4, D: 3, E: 2, F: 1 };
+  const grades = player.grades;
+  
+  const total =
+    (GRADE_VALUES[grades.hitting] || 1) +
+    (GRADE_VALUES[grades.power] || 1) +
+    (GRADE_VALUES[grades.discipline] || 1) +
+    (GRADE_VALUES[grades.speed] || 1) +
+    (GRADE_VALUES[grades.defense] || 1) +
+    (GRADE_VALUES[grades.accuracy] || 1) +
+    (GRADE_VALUES[grades.armStrength] || 1) +
+    (GRADE_VALUES[grades.iq] || 1);
+
+  return total / 8;
+};

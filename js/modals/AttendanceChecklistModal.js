@@ -36,7 +36,7 @@ export const AttendanceChecklistModal = ({ players, onToggleAttendance, onToggle
             // Player List
             React.createElement('div', { className: 'flex-1 overflow-y-auto p-3' },
                 React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1.5' },
-                    players.map(player =>
+                    [...players].sort((a, b) => parseInt(a.number || 0) - parseInt(b.number || 0)).map(player =>
                         React.createElement('div', {
                             key: player.id,
                             className: `flex items-center gap-2 px-2 py-1.5 rounded-lg border transition-all cursor-pointer active:scale-[0.95] ${player.willAttend ? 'bg-blue-600/40 border-blue-400/50 text-white' : 'bg-slate-800/30 border-white/5 text-slate-500'}`,

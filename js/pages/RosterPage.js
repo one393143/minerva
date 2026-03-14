@@ -3,6 +3,7 @@
  */
 
 import { PlayerCard } from '../components/PlayerCard.js';
+import { calculateAverageGrade } from '../utils/helpers.js';
 
 export const RosterPage = ({
   players,
@@ -18,6 +19,39 @@ export const RosterPage = ({
   onToggleAttendance,
   onOpenAttendanceChecklist
 }) => {
+  const [sortBy, setSortBy] = React.useState('number');
+  const [filterPosition, setFilterPosition] = React.useState('ALL');
+
+  const POSITIONS = ['ALL', 'P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'];
+
+  const processedPlayers = React.useMemo(() => {
+    let result = [...players];
+
+    // Filtering
+    if (filterPosition !== 'ALL') {
+      result = result.filter(p => 
+        p.primaryPosition === filterPosition || 
+        (p.secondaryPositions && p.secondaryPositions.includes(filterPosition))
+      );
+    }
+
+    // Sorting
+    result.sort((a, b) => {
+      if (sortBy === 'number') {
+        return parseInt(a.number || 0) - parseInt(b.number || 0);
+      } else if (sortBy === 'points') {
+        return (b.points || 0) - (a.points || 0);
+      } else if (sortBy === 'strokes') {
+        return a.name.localeCompare(b.name, 'zh-TW', { collation: 'stroke' });
+      } else if (sortBy === 'ability') {
+        return calculateAverageGrade(b) - calculateAverageGrade(a);
+      }
+      return 0;
+    });
+
+    return result;
+  }, [players, sortBy, filterPosition]);
+
   return React.createElement('div', { className: 'animate-slide-up space-y-6' },
     // Header
     React.createElement('div', { className: 'bg-slate-900 p-4 rounded-3xl border border-white/10 shadow-xl' },
@@ -87,12 +121,42 @@ export const RosterPage = ({
           onClick: onOpenAttendanceChecklist,
           className: 'col-span-2 text-xs font-black bg-cyan-600 text-white px-4 py-3 rounded-full border border-cyan-400 shadow-xl shadow-cyan-900/40 mt-2 btn-primary'
         }, '📋 快速勾選出席')
+      ),
+
+      // Sort and Filter Controls
+      React.createElement('div', { className: 'mt-6 pt-4 border-t border-white/10 flex flex-col md:flex-row gap-4 items-center justify-between' },
+        
+        // Filter Settings
+        React.createElement('div', { className: 'flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 hide-scrollbar' },
+          React.createElement('span', { className: 'text-slate-400 font-bold text-xs shrink-0' }, '篩選位置：'),
+          POSITIONS.map(pos => 
+            React.createElement('button', {
+              key: pos,
+              onClick: () => setFilterPosition(pos),
+              className: `px-3 py-1 rounded-full font-black text-xs transition-all shrink-0 ${filterPosition === pos ? 'bg-blue-600 text-white border border-blue-400' : 'bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700'}`
+            }, pos === 'ALL' ? '全部' : pos)
+          )
+        ),
+
+        // Sort Settings
+        React.createElement('div', { className: 'flex gap-2 w-full md:w-auto' },
+          React.createElement('select', {
+            value: sortBy,
+            onChange: (e) => setSortBy(e.target.value),
+            className: 'flex-1 md:w-48 bg-slate-800 text-white border border-slate-600 rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-cyan-500'
+          },
+            React.createElement('option', { value: 'number' }, '🔢 依背號排序'),
+            React.createElement('option', { value: 'points' }, '🏆 依績分排序'),
+            React.createElement('option', { value: 'strokes' }, '✍️ 依姓氏筆畫'),
+            React.createElement('option', { value: 'ability' }, '⭐ 依綜合能力')
+          )
+        )
       )
     ),
 
-    // Player Cards
+    // Player Cards - Update to use processedPlayers
     React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' },
-      players.length > 0 ? players.map(player =>
+      processedPlayers.length > 0 ? processedPlayers.map(player =>
         React.createElement(PlayerCard, {
           key: player.id,
           player: player,

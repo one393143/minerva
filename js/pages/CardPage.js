@@ -2,8 +2,8 @@
  * 球員卡測試頁面 - Modal 置中版
  * 檔案位置: js/pages/CardPage.js
  */
-
 import { PlayerCardDisplay } from '../components/PlayerCardDisplay.js';
+import { calculateAverageGrade } from '../utils/helpers.js';
 
 export const CardPage = ({ players }) => {
   const [selectedPlayer, setSelectedPlayer] = React.useState(null);
@@ -11,21 +11,6 @@ export const CardPage = ({ players }) => {
   const [sortBy, setSortBy] = React.useState('grade');
 
   const GRADE_VALUES = { S: 7, A: 6, B: 5, C: 4, D: 3, E: 2, F: 1 };
-
-  const calculateAverageGrade = (player) => {
-    const grades = player.grades;
-    const total =
-      GRADE_VALUES[grades.hitting] +
-      GRADE_VALUES[grades.power] +
-      GRADE_VALUES[grades.discipline] +
-      GRADE_VALUES[grades.speed] +
-      GRADE_VALUES[grades.defense] +
-      GRADE_VALUES[grades.accuracy] +
-      GRADE_VALUES[grades.armStrength] +
-      GRADE_VALUES[grades.iq];
-
-    return total / 8;
-  };
 
   const getLetterGrade = (average) => {
     if (average >= 6.7) return 'S';
