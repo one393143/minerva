@@ -21,6 +21,7 @@ export const FieldPage = ({
   const [showOptimizeModal, setShowOptimizeModal] = React.useState(null);
   const [selectedPitcher, setSelectedPitcher] = React.useState('');
   const [dhCount, setDhCount] = React.useState(1);
+  const [showExportLineupModal, setShowExportLineupModal] = React.useState(false); // 🆕 匯出名單
 
   const availablePlayers = players.filter(p => p.willAttend);
   const pitchers = availablePlayers.filter(p =>
@@ -59,10 +60,37 @@ export const FieldPage = ({
     setDhCount(1);
   };
 
+  // 🆕 產生匯出名單文字（不含積分）
+  const generateLineupText = () => {
+    const positionOrder = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH1', 'DH2', 'DH3'];
+    let text = '';
+    positionOrder.forEach(pos => {
+      const playerId = lineup[pos];
+      if (playerId) {
+        const player = availablePlayers.find(p => p.id === playerId);
+        if (player) {
+          const displayPos = pos.startsWith('DH') ? 'DH' : pos;
+          text += `${player.name} ${displayPos}\n`;
+        }
+      }
+    });
+    return text.trim();
+  };
+
+  // 🆕 複製名單到剪貼簿
+  const handleCopyLineupText = () => {
+    const text = generateLineupText();
+    try {
+      navigator.clipboard.writeText(text);
+      alert('✅ 已複製到剪貼簿');
+    } catch (err) {
+      alert('❌ 複製失敗，請手動複製');
+    }
+  };
+
   const renderFieldSlot = (pos, top, left) => {
     const player = availablePlayers.find(x => x.id === lineup[pos]);
 
-    // 取得等級顏色 (預設為灰白色)
     const rarityColor = (player && player.grades)
       ? getCardRarity(player.grades)
       : 'from-black/40 to-black/60';
@@ -88,7 +116,6 @@ export const FieldPage = ({
     );
   };
 
-  // 🆕 根據不同模式顯示不同的說明文字
   const getModalDescription = () => {
     switch (showOptimizeModal) {
       case '積分優先':
@@ -98,7 +125,6 @@ export const FieldPage = ({
           `• DH 數量決定 DH1~DH${dhCount} 的配置`,
           '• 其他位置依據「位置適性 + 積分」自動排列'
         ];
-
       case '守備最佳化':
         return [
           '• 守備能力最強的球員優先上場',
@@ -107,7 +133,6 @@ export const FieldPage = ({
           `• DH 數量決定 DH1~DH${dhCount} 的配置`,
           '• 目標：場上守備總分最高'
         ];
-
       case '打擊最大化':
         return [
           '• 打擊能力最強的球員優先上場',
@@ -116,7 +141,6 @@ export const FieldPage = ({
           `• DH 數量決定 DH1~DH${dhCount} 的配置`,
           '• 目標：場上打擊總分最高'
         ];
-
       case '平衡模式':
         return [
           '• 綜合考慮所有能力 + 積分',
@@ -124,14 +148,75 @@ export const FieldPage = ({
           `• DH 數量決定 DH1~DH${dhCount} 的配置`,
           '• 目標：場上總體能力最均衡'
         ];
-
       default:
         return [];
     }
   };
 
-  return React.createElement('div', {}, // Root container
-    // Content with animation
+  // 🆕 匯出名單 Modal
+  const renderExportLineupModal = () => {
+    const positionOrder = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH1', 'DH2', 'DH3'];
+    const lineupRows = positionOrder
+      .filter(pos => lineup[pos])
+      .map(pos => {
+        const player = availablePlayers.find(p => p.id === lineup[pos]);
+        return player ? { name: player.name, pos: pos.startsWith('DH') ? 'DH' : pos } : null;
+      })
+      .filter(Boolean);
+
+    return React.createElement('div', {
+      className: 'fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop modal-enter'
+    },
+      React.createElement('div', {
+        className: 'bg-slate-900 w-full max-w-sm rounded-3xl border-2 border-white/10 p-6 shadow-2xl'
+      },
+        // 標題
+        React.createElement('h3', {
+          className: 'text-xl font-black mb-1 text-center text-cyan-400'
+        }, '📋 先發名單'),
+        React.createElement('p', {
+          className: 'text-xs text-slate-500 text-center mb-5'
+        }, '守備位置名單（不含積分）'),
+
+        // 名單列表
+        lineupRows.length > 0
+          ? React.createElement('div', {
+              className: 'space-y-2 mb-6 max-h-72 overflow-y-auto'
+            },
+            lineupRows.map(({ name, pos }, idx) =>
+              React.createElement('div', {
+                key: idx,
+                className: 'flex items-center justify-between bg-slate-800 px-4 py-2 rounded-xl'
+              },
+                React.createElement('span', {
+                  className: 'font-black text-white text-sm'
+                }, name),
+                React.createElement('span', {
+                  className: 'text-xs font-black bg-cyan-700/50 text-cyan-300 px-3 py-1 rounded-full border border-cyan-500/30'
+                }, pos)
+              )
+            )
+          )
+          : React.createElement('p', {
+              className: 'text-center text-slate-600 text-sm py-6 font-bold'
+            }, '尚未排入任何球員'),
+
+        // 按鈕
+        React.createElement('div', { className: 'flex gap-3' },
+          React.createElement('button', {
+            onClick: () => setShowExportLineupModal(false),
+            className: 'flex-1 py-3 rounded-2xl bg-slate-800 text-slate-400 font-black text-xs uppercase tracking-widest'
+          }, '關閉'),
+          React.createElement('button', {
+            onClick: handleCopyLineupText,
+            className: 'flex-1 py-3 rounded-2xl bg-cyan-600 text-white font-black text-xs uppercase tracking-widest shadow-lg'
+          }, '📋 複製名單')
+        )
+      )
+    );
+  };
+
+  return React.createElement('div', {},
     React.createElement('div', { className: 'animate-slide-up space-y-8' },
       // Control Panel
       React.createElement('div', { className: 'bg-slate-900 p-4 rounded-3xl border border-white/10 shadow-xl' },
@@ -149,12 +234,20 @@ export const FieldPage = ({
           )
         ),
 
-        React.createElement('button', {
-          onClick: onExportImage,
-          className: 'text-[10px] font-black bg-cyan-700/50 text-cyan-400 px-4 py-2 rounded-full border border-cyan-500/30 btn-primary shadow-lg'
-        }, '📸 分流/產生圖片'),
+        React.createElement('div', { className: 'flex gap-2 flex-wrap' },
+          React.createElement('button', {
+            onClick: onExportImage,
+            className: 'text-[10px] font-black bg-cyan-700/50 text-cyan-400 px-4 py-2 rounded-full border border-cyan-500/30 btn-primary shadow-lg'
+          }, '📸 分流/產生圖片'),
 
-        React.createElement('div', { className: 'flex gap-2' },
+          // 🆕 匯出名單按鈕
+          React.createElement('button', {
+            onClick: () => setShowExportLineupModal(true),
+            className: 'text-[10px] font-black bg-emerald-700/50 text-emerald-400 px-4 py-2 rounded-full border border-emerald-500/30 btn-primary shadow-lg'
+          }, '📋 匯出名單')
+        ),
+
+        React.createElement('div', { className: 'flex gap-2 mt-2' },
           React.createElement('button', {
             onClick: onUploadLineup,
             className: 'text-[10px] font-black bg-emerald-700/50 text-emerald-400 px-4 py-2 rounded-full border border-emerald-500/30 btn-primary shadow-lg'
@@ -186,7 +279,7 @@ export const FieldPage = ({
           },
             React.createElement('span', { className: `text-[10px] font-black mb-1 uppercase ${player ? 'text-white/80' : 'text-white/40'}` }, dh),
             React.createElement('span', { className: 'text-sm font-black truncate text-white drop-shadow-md' },
-              player?.name || '---'
+              player ? player.name : '---'
             )
           );
         })
@@ -204,17 +297,16 @@ export const FieldPage = ({
               key: p.id,
               player: p,
               compact: true,
-              onClick: () => onPlayerClick(p) // 🆕 點擊顯示詳細資料
+              onClick: () => onPlayerClick(p)
             })
           ) : React.createElement('p', {
             className: 'col-span-full text-center text-xs text-slate-700 py-6 font-bold uppercase tracking-widest'
           }, 'Empty Bench')
         )
-      ),
-
+      )
     ),
 
-    // AutoOptimize Modal (Moved outside animation container)
+    // AutoOptimize Modal
     showOptimizeModal && React.createElement('div', {
       className: 'fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop modal-enter'
     },
@@ -226,7 +318,6 @@ export const FieldPage = ({
         }, `${showOptimizeModal} - 設定`),
 
         React.createElement('div', { className: 'space-y-6' },
-          // 投手選擇器
           React.createElement('div', { className: 'space-y-2' },
             React.createElement('label', {
               className: 'text-xs font-black text-slate-400 uppercase'
@@ -245,7 +336,6 @@ export const FieldPage = ({
             )
           ),
 
-          // 選擇 DH 數量
           React.createElement('div', { className: 'space-y-2' },
             React.createElement('label', {
               className: 'text-xs font-black text-slate-400 uppercase'
@@ -261,7 +351,6 @@ export const FieldPage = ({
             )
           ),
 
-          // 🆕 動態說明文字
           React.createElement('div', {
             className: 'bg-slate-800/50 rounded-xl p-3 text-xs text-slate-400'
           },
@@ -272,7 +361,6 @@ export const FieldPage = ({
           )
         ),
 
-        // Actions
         React.createElement('div', { className: 'flex gap-3 mt-6' },
           React.createElement('button', {
             onClick: handleModalClose,
@@ -285,6 +373,9 @@ export const FieldPage = ({
           }, 'Confirm')
         )
       )
-    )
+    ),
+
+    // 🆕 匯出名單 Modal
+    showExportLineupModal && renderExportLineupModal()
   );
 };
