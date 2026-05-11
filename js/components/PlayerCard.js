@@ -47,7 +47,12 @@ export const PlayerCard = ({
       className: `rounded-xl border-2 flex items-center gap-3 ${onClick ? 'cursor-pointer' : ''} transition-all active:scale-95 bg-gradient-to-br ${rarity} shadow-md border-white/10 ${!player.willAttend ? 'opacity-40' : ''} ${forceUniform ? 'p-6 relative h-24 justify-center' : 'p-3'}`
     },
       React.createElement('span', { className: `${forceUniform ? 'absolute top-3 left-4 text-xs' : 'text-[10px]'} font-black opacity-60` }, `#${player.number}`),
-      React.createElement('span', { className: `${forceUniform ? 'text-2xl text-white' : 'text-sm text-slate-900'} font-black flex-1 text-center` }, player.name),
+      React.createElement('span', { className: `${forceUniform ? 'text-2xl text-white' : 'text-sm text-slate-900'} font-black flex-1 text-center` },
+  player.name,
+  player.points != null
+    ? React.createElement('span', { className: 'text-xs font-bold ml-1 opacity-60' }, `(積分${player.points}分)`)
+    : null
+),
       React.createElement('span', { className: `${forceUniform ? 'absolute top-3 right-4 text-sm' : 'text-[9px]'} font-black bg-black/30 px-2 py-0.5 rounded uppercase text-white` }, player.primaryPosition)
     );
   }
@@ -65,8 +70,12 @@ export const PlayerCard = ({
     React.createElement('div', { className: 'flex justify-between items-start mb-2 relative z-10' },
       React.createElement('div', { className: 'flex flex-col' },
         React.createElement('span', { className: 'text-[10px] font-black uppercase opacity-70 text-slate-900' }, `No.${player.number}`),
-        React.createElement('h3', { className: 'text-lg font-black drop-shadow-md leading-tight text-slate-900' }, player.name)
-      ),
+        React.createElement('h3', { className: 'text-lg font-black drop-shadow-md leading-tight text-slate-900' },
+  player.name,
+  player.points != null
+    ? React.createElement('span', { className: 'text-xs font-bold ml-1 opacity-60' }, `(積分${player.points}分)`)
+    : null
+),
       React.createElement('div', { className: 'flex items-center gap-2 flex-col' },
         React.createElement('div', { className: 'bg-black/30 px-2 py-1 rounded-lg font-black text-[11px] text-white' }, player.primaryPosition),
         // 🆕 出席勾選框
