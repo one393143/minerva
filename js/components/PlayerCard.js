@@ -48,11 +48,8 @@ export const PlayerCard = ({
     },
       React.createElement('span', { className: `${forceUniform ? 'absolute top-3 left-4 text-xs' : 'text-[10px]'} font-black opacity-60` }, `#${player.number}`),
       React.createElement('span', { className: `${forceUniform ? 'text-2xl text-white' : 'text-sm text-slate-900'} font-black flex-1 text-center` },
-  player.name,
-  player.points != null
-    ? React.createElement('span', { className: 'text-xs font-bold ml-1 opacity-60' }, `(積分${player.points}分)`)
-    : null
-),
+        `${player.name}(積分${player.points ?? 0}分)`
+      ),
       React.createElement('span', { className: `${forceUniform ? 'absolute top-3 right-4 text-sm' : 'text-[9px]'} font-black bg-black/30 px-2 py-0.5 rounded uppercase text-white` }, player.primaryPosition)
     );
   }
@@ -71,11 +68,9 @@ export const PlayerCard = ({
       React.createElement('div', { className: 'flex flex-col' },
         React.createElement('span', { className: 'text-[10px] font-black uppercase opacity-70 text-slate-900' }, `No.${player.number}`),
         React.createElement('h3', { className: 'text-lg font-black drop-shadow-md leading-tight text-slate-900' },
-  player.name,
-  player.points != null
-    ? React.createElement('span', { className: 'text-xs font-bold ml-1 opacity-60' }, `(積分${player.points}分)`)
-    : null
-),
+          `${player.name}(積分${player.points ?? 0}分)`
+        )
+      ),
       React.createElement('div', { className: 'flex items-center gap-2 flex-col' },
         React.createElement('div', { className: 'bg-black/30 px-2 py-1 rounded-lg font-black text-[11px] text-white' }, player.primaryPosition),
         // 🆕 出席勾選框
