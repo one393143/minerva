@@ -2,8 +2,7 @@
  * Google Sheets 資料服務 - 修正版
  * 路徑：js/services/google-sheets-service.js
  */
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQC11i6DpV8cO-NoRHLsBXsb71TRjjVCX1t8JlAXky_RCDhTCBAUD2GAnpsAIyHT4SR9tiyfvBz1lPk/pub?gid=891092437&single=true&output=csv';
-
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1Mrp86A85Gj_fP6-dG8DN4jq0Lkrbl9Tz_HM5t1OnsKQ/export?format=csv&gid=891092437';
 /**
  * 從 Google Sheets 讀取球員積分
  * @returns {Promise<Object>} { playerName: points }
