@@ -31,22 +31,18 @@ export async function fetchPlayerPointsFromGoogleSheets() {
 
 /**
  * 解析 CSV 並提取球員姓名與積分
- * 結構：
- *   第 1 行：個人資訊（略過）
- *   第 2 行：標題（名字 | ... | 積分 | ...）
- *   第 3 行起：球員資料
  * @param {string} csvText 
  * @returns {Object} { playerName: points }
  */
 function parseCSVToPoints(csvText) {
   const lines = csvText.trim().split('\n');
   
-  if (lines.length < 3) {
+  if (lines.length < 2) {
     throw new Error('試算表格式錯誤：資料行數不足');
   }
   
-  // 第 2 行（index 1）是標題，自動找「積分」欄位的位置
-  const headerCells = parseCSVLine(lines[1]);
+  // 標題在第 1 行（index 0）
+  const headerCells = parseCSVLine(lines[0]);
   const totalIndex = headerCells.findIndex(cell => cell.trim() === '積分');
   
   if (totalIndex === -1) {
@@ -56,8 +52,8 @@ function parseCSVToPoints(csvText) {
   
   console.log(`📌 找到「積分」欄位：第 ${totalIndex + 1} 欄`);
   
-  // 跳過前兩行（第1行=個人資訊, 第2行=標題）
-  const dataLines = lines.slice(2);
+  // 資料從第 2 行開始（跳過 index 0 的標題）
+  const dataLines = lines.slice(1);
   
   const pointsMap = {};
   
@@ -65,8 +61,8 @@ function parseCSVToPoints(csvText) {
     try {
       const cells = parseCSVLine(line);
       
-      // 第 1 欄（index 0）是球員姓名
-      const playerName = cells[0]?.trim();
+      // 球員姓名在 B 欄（index 1）
+      const playerName = cells[1]?.trim();
       
       // 「積分」欄位的積分（支援小數點）
       const pointsStr = cells[totalIndex]?.trim();
@@ -77,7 +73,7 @@ function parseCSVToPoints(csvText) {
         console.log(`  ✓ ${playerName}: ${points} 分`);
       }
     } catch (error) {
-      console.warn(`⚠️ 第 ${index + 3} 行解析失敗:`, error.message);
+      console.warn(`⚠️ 第 ${index + 2} 行解析失敗:`, error.message);
     }
   });
   
