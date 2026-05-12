@@ -43,7 +43,7 @@ function parseCSVToPoints(csvText) {
   }
   
   // 跳過第一行（統整資訊）和第二行（標題）
-  const dataLines = lines.slice(2);
+  const dataLines = lines.slice(1);
   
   const pointsMap = {};
   
@@ -52,10 +52,10 @@ function parseCSVToPoints(csvText) {
       const cells = parseCSVLine(line);
       
       // 第三欄（index 2）是球員姓名
-      const playerName = cells[2]?.trim();
+      const playerName = cells[1]?.trim();
       
       // 最後一欄是積分
-      const pointsStr = cells[cells.length - 1]?.trim();
+      const pointsStr = cells[2]?.trim();
       const points = parseInt(pointsStr) || 0;
       
       if (playerName && playerName !== '') {
