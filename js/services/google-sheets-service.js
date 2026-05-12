@@ -3,7 +3,8 @@
  * 路徑：js/services/google-sheets-service.js
  */
 
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQC11i6DpV8cO-NoRHLsBXsb71TRjjVCX1t8JlAXky_RCDhTCBAUD2GAnpsAIyHT4SR9tiyfvBz1lPk/pub?gid=1645476851&single=true&output=csv';
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQC11i6DpV8cO-NoRHLsBXsb71TRjjVCX1t8JlAXky_RCDhTCBAUD2GAnpsAIyHT4SR9tiyfvBz1lPk/pub?gid=891092437&single=true&output=csv';
+
 
 /**
  * 從 Google Sheets 讀取球員積分
