@@ -2,9 +2,7 @@
  * Google Sheets 資料服務 - 修正版
  * 路徑：js/services/google-sheets-service.js
  */
-
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQC11i6DpV8cO-NoRHLsBXsb71TRjjVCX1t8JlAXky_RCDhTCBAUD2GAnpsAIyHT4SR9tiyfvBz1lPk/pub?gid=891092437&single=true&output=csv';
-
 
 /**
  * 從 Google Sheets 讀取球員積分
@@ -33,6 +31,10 @@ export async function fetchPlayerPointsFromGoogleSheets() {
 
 /**
  * 解析 CSV 並提取球員姓名與積分
+ * 結構：
+ *   第 1 行：個人資訊（略過）
+ *   第 2 行：標題（名字 | ... | 總計 | ...）
+ *   第 3 行起：球員資料
  * @param {string} csvText 
  * @returns {Object} { playerName: points }
  */
@@ -43,8 +45,19 @@ function parseCSVToPoints(csvText) {
     throw new Error('試算表格式錯誤：資料行數不足');
   }
   
-  // 跳過第一行（統整資訊）和第二行（標題）
-  const dataLines = lines.slice(1);
+  // 第 2 行（index 1）是標題，自動找「總計」欄位的位置
+  const headerCells = parseCSVLine(lines[1]);
+  const totalIndex = headerCells.findIndex(cell => cell.trim() === '總計');
+  
+  if (totalIndex === -1) {
+    console.error('標題行內容：', headerCells);
+    throw new Error('找不到「總計」欄位，請確認 Google Sheets 標題列有「總計」這個字');
+  }
+  
+  console.log(`📌 找到「總計」欄位：第 ${totalIndex + 1} 欄`);
+  
+  // 跳過前兩行（第1行=個人資訊, 第2行=標題）
+  const dataLines = lines.slice(2);
   
   const pointsMap = {};
   
@@ -52,12 +65,12 @@ function parseCSVToPoints(csvText) {
     try {
       const cells = parseCSVLine(line);
       
-      // 第三欄（index 2）是球員姓名
-      const playerName = cells[1]?.trim();
+      // 第 1 欄（index 0）是球員姓名
+      const playerName = cells[0]?.trim();
       
-      // 最後一欄是積分
-      const pointsStr = cells[2]?.trim();
-      const points = parseInt(pointsStr) || 0;
+      // 「總計」欄位的積分（支援小數點）
+      const pointsStr = cells[totalIndex]?.trim();
+      const points = parseFloat(pointsStr) || 0;
       
       if (playerName && playerName !== '') {
         pointsMap[playerName] = points;
@@ -86,7 +99,6 @@ function parseCSVLine(line) {
     
     if (char === '"') {
       if (inQuotes && line[i + 1] === '"') {
-        // 處理雙引號轉義
         current += '"';
         i++;
       } else {
@@ -123,7 +135,7 @@ export function updatePlayersPoints(players, pointsMap) {
     } else {
       notFoundCount++;
       console.warn(`⚠️ 找不到球員「${player.name}」的積分，設為 0`);
-      return { ...player, points: 0 };  // 🆕 修改：未找到設為 0
+      return { ...player, points: 0 };
     }
   });
   
